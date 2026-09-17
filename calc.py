@@ -1,3 +1,10 @@
+OPERATORS = "-+*/()[]{}^"
+
+closing_bracket = {
+    "(": ")",
+    "[": "]",
+    "{": "}"
+}
 class Parser:
     def __init__(self,tokens):
         self.tokens = tokens
@@ -9,11 +16,13 @@ class Parser:
         return self.tokens[self.position]
     
     def factor(self):
-        if self.current() == "(":
+        if self.current() in closing_bracket:
+            opening = self.current()
+            closing = closing_bracket[opening]
             self.position += 1
             value = self.expression()
-            if self.position >= len(tokens) or self.current() != ")":
-                raise ValueError("Expected ')'")
+            if self.position >= len(self.tokens) or self.current() != closing:
+                raise ValueError(f"Expected '{closing}'")
             self.position += 1
             return value
         else:
@@ -22,6 +31,14 @@ class Parser:
             value = float(self.current())
             self.position += 1
             return value
+
+    def power(self):
+        value = self.unary()
+        if self.current() == "^":
+            self.position += 1
+            exponent = self.power()
+            value = value ** exponent
+        return value
 
     def unary(self):
         if self.current() == "-":
@@ -36,13 +53,13 @@ class Parser:
             return self.factor();
 
     def term(self):
-        value = self.unary()
+        value = self.power()
 
         while self.position < len(self.tokens) and self.current() in ("*","/"):
             operator = self.current()
             self.position += 1
 
-            right = self.unary()
+            right = self.power()
             if operator == "*":
                 value *= right
             else:
@@ -90,7 +107,7 @@ def tokenizer(expression):
                 
             token.append(digits)
 
-        elif char in "+-*/()":
+        elif char in OPERATORS:
             token.append(char)
             i += 1
         elif char.isspace():
