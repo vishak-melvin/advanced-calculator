@@ -1,3 +1,66 @@
+class parser:
+    def __init__(self,tokens):
+        self.tokens = tokens
+        self.position = 0
+
+    def current(self):
+        if self.position >= len(tokens):
+            return None
+        return self.tokens[self.position]
+    
+    def factor(self):
+        if self.current() == "(":
+            self.position += 1
+            value = self.expression()
+            if self.position >= len(tokens) or self.current() != ")":
+                raise ValueError("Expected ')'")
+            self.position += 1
+            return value
+        else:
+            value = float(self.current())
+            self.position += 1
+            return value
+
+    def unary(self):
+        if self.current() == "-":
+            self.position += 1
+            value = self.unary()
+            return -value
+        elif self.current() == "+":
+            self.position += 1
+            value = self.unary()
+            return value
+        else:
+            return self.factor();
+
+    def term(self):
+        value = self.unary()
+
+        while self.position < len(self.tokens) and self.current() in ("*","/"):
+            operator = self.current()
+            self.position += 1
+
+            right = self.unary()
+            if operator == "*":
+                value *= right
+            else:
+                value /= right
+        return value
+
+    def expression(self):
+        value = self.term()
+
+        while self.position < len(self.tokens) and self.current() in ("+","-"):
+            operator = self.current()
+            self.position += 1
+
+            right = self.term()
+            if operator == "+":
+                value += right
+            else:
+                value -= right
+        return value
+
 def tokenizer(expression):
     token = []
     i = 0
@@ -34,76 +97,11 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
-def parser(tokens):
-    position = 0
-
-    def factor():
-        nonlocal position
-
-        if tokens[position] == "(":
-            position += 1
-            value = expression()
-            if position >= len(tokens) or tokens[position] != ")":
-                raise ValueError("Expected ')")
-            position += 1
-            return value
-        else:
-            value = float(tokens[position])
-            position += 1
-            return value
-
-    def unary():
-        nonlocal position
-        if tokens[position] == "-":
-            position += 1
-            value = unary()
-            return -value
-        elif tokens[position] == "+":
-            position += 1
-            value = unary()
-            return value
-        else:
-            return factor();
-
-    def term():
-        nonlocal position
-        value = unary()
-
-        while position < len(tokens) and tokens[position] in ("*","/"):
-            operator = tokens[position]
-            position += 1
-
-            right = factor()
-            if operator == "*":
-                value *= right
-            else:
-                value /= right
-        return value
-
-    def expression():
-        nonlocal position
-        value = term()
-
-        while position < len(tokens) and tokens[position] in ("+","-"):
-            operator = tokens[position]
-            position += 1
-
-            right = term()
-            if operator == "+":
-                value += right
-            else:
-                value -= right
-        return value
-
-    result = expression()
-    if position != len(tokens):
-        raise ValueError(f"Unexpected token: {tokens[position]}")
-    return result
-
 expression = input("enter an expression: ")
 if not expression.strip():
     raise ValueError(f"Expression cannot be empty")
 
 tokens = tokenizer(expression)
-result = parser(tokens)
+parser = parser(tokens)
+result = parser.expression()
 print(result)
