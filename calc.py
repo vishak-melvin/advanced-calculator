@@ -52,9 +52,22 @@ def parser(tokens):
             position += 1
             return value
 
+    def unary():
+        nonlocal position
+        if tokens[position] == "-":
+            position += 1
+            value = unary()
+            return -value
+        elif tokens[position] == "+":
+            position += 1
+            value = unary()
+            return value
+        else:
+            return factor();
+
     def term():
         nonlocal position
-        value = factor()
+        value = unary()
 
         while position < len(tokens) and tokens[position] in ("*","/"):
             operator = tokens[position]
