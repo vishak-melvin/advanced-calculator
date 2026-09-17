@@ -1,2 +1,2 @@
-# calculator
-A python based calculator that can handle large expression
+# advanced-calculator
+An advanced calculator that is able to compute large and nested expression.
