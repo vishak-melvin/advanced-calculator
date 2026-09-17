@@ -1,4 +1,4 @@
-class parser:
+class Parser:
     def __init__(self,tokens):
         self.tokens = tokens
         self.position = 0
@@ -97,11 +97,16 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
-expression = input("enter an expression: ")
-if not expression.strip():
-    raise ValueError(f"Expression cannot be empty")
-
-tokens = tokenizer(expression)
-parser = parser(tokens)
-result = parser.expression()
-print(result)
+while(True):
+    expression = input("enter an expression: ")
+    if not expression.strip():
+        raise ValueError(f"Expression cannot be empty")
+    try:
+        if(expression=="exit"):
+            break
+        tokens = tokenizer(expression)
+        parser = Parser(tokens)
+        result = parser.expression()
+        print(result)
+    except ValueError:
+        print("Error:", ValueError)
