@@ -43,7 +43,7 @@ def parser(tokens):
         if tokens[position] == "(":
             position += 1
             value = expression()
-            if tokens[position] != ")":
+            if position >= len(tokens) or tokens[position] != ")":
                 raise ValueError("Expected ')")
             position += 1
             return value
@@ -81,9 +81,16 @@ def parser(tokens):
             else:
                 value -= right
         return value
-    return expression()
+
+    result = expression()
+    if position != len(tokens):
+        raise ValueError(f"Unexpected token: {tokens[position]}")
+    return result
 
 expression = input("enter an expression: ")
+if not expression.strip():
+    raise ValueError(f"Expression cannot be empty")
+
 tokens = tokenizer(expression)
 result = parser(tokens)
 print(result)
