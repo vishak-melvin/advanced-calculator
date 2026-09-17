@@ -1,4 +1,4 @@
-class parser:
+class Parser:
     def __init__(self,tokens):
         self.tokens = tokens
         self.position = 0
@@ -17,6 +17,8 @@ class parser:
             self.position += 1
             return value
         else:
+            if self.current() is None:
+                raise ValueError("Expected a number or '('")
             value = float(self.current())
             self.position += 1
             return value
@@ -97,11 +99,18 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
-expression = input("enter an expression: ")
-if not expression.strip():
-    raise ValueError(f"Expression cannot be empty")
-
-tokens = tokenizer(expression)
-parser = parser(tokens)
-result = parser.expression()
-print(result)
+while(True):
+    expression = input("enter an expression: ")
+    if not expression.strip():
+        raise ValueError("Expression cannot be empty")
+    try:
+        if(expression=="exit"):
+            break
+        tokens = tokenizer(expression)
+        parser = Parser(tokens)
+        result = parser.expression()
+        print(result)
+    except ValueError as error:
+        print("Error:", error)
+    except ZeroDivisionError:
+        print("Error: division by zero")
