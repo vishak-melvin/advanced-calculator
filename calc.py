@@ -17,6 +17,8 @@ class Parser:
             self.position += 1
             return value
         else:
+            if self.current() is None:
+                raise ValueError("Expected a number or '('")
             value = float(self.current())
             self.position += 1
             return value
@@ -100,7 +102,7 @@ def tokenizer(expression):
 while(True):
     expression = input("enter an expression: ")
     if not expression.strip():
-        raise ValueError(f"Expression cannot be empty")
+        raise ValueError("Expression cannot be empty")
     try:
         if(expression=="exit"):
             break
@@ -108,5 +110,7 @@ while(True):
         parser = Parser(tokens)
         result = parser.expression()
         print(result)
-    except ValueError:
-        print("Error:", ValueError)
+    except ValueError as error:
+        print("Error:", error)
+    except ZeroDivisionError:
+        print("Error: division by zero")
