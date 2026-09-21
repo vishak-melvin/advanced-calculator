@@ -45,21 +45,20 @@ class Parser:
 
         if self.current() != "(":
             raise ValueError(f"Expected '(' after {name}")
-
         self.position += 1
-        x = self.expression()
+        arguments = []
 
-        if self.current() != ",":
-            raise ValueError("Expected ','")
-        
+        if self.current() != ")":
+            arguments.append(self.expression())
 
-        self.position += 1
-        base = self.expression()
+            while self.current() == ",":
+                self.position += 1
+                arguments.append(self.expression())
 
         if self.current() != ")":
             raise ValueError("Expected ')'")
         self.position += 1
-        return FUNCTIONS[name](x,base)
+        return FUNCTIONS[name](*arguments)
         
 
 
