@@ -1,5 +1,5 @@
 import math
-OPERATORS = "-+*/()[]{}^"
+OPERATORS = "-+*/()[]{}^,"
 
 FUNCTIONS = {
     "log":math.log
@@ -30,12 +30,38 @@ class Parser:
                 raise ValueError(f"Expected '{closing}'")
             self.position += 1
             return value
+        elif self.current() in FUNCTIONS:
+            return self.functions()
         else:
             if self.current() is None:
                 raise ValueError("Expected a number or '('")
             value = float(self.current())
             self.position += 1
             return value
+
+    def functions(self):
+        name = self.current()
+        self.position += 1
+
+        if self.current() != "(":
+            raise ValueError(f"Expected '(' after {name}")
+
+        self.position += 1
+        x = self.expression()
+
+        if self.current() != ",":
+            raise ValueError("Expected ','")
+        
+
+        self.position += 1
+        base = self.expression()
+
+        if self.current() != ")":
+            raise ValueError("Expected ')'")
+        self.position += 1
+        return FUNCTIONS[name](x,base)
+        
+
 
     def power(self):
         value = self.unary()
