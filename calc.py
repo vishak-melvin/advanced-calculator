@@ -2,7 +2,7 @@ import math
 OPERATORS = "-+*/()[]{}^,"
 
 FUNCTIONS = {
-    "log":math.log
+    "log": (math.log, 1, 2)
 }
 
 closing_bracket = {
@@ -43,6 +43,8 @@ class Parser:
         name = self.current()
         self.position += 1
 
+        function, min_args, max_args = FUNCTIONS[name]
+
         if self.current() != "(":
             raise ValueError(f"Expected '(' after {name}")
         self.position += 1
@@ -58,7 +60,10 @@ class Parser:
         if self.current() != ")":
             raise ValueError("Expected ')'")
         self.position += 1
-        return FUNCTIONS[name](*arguments)
+
+        if len(arguments) < min_args or len(arguments) > max_args:
+            raise ValueError(f"{name} expects {min_args} to {max_args} arguements")
+        return function(*arguments)
         
 
 
