@@ -1,4 +1,9 @@
-OPERATORS = "-+*/()[]{}^"
+import math
+OPERATORS = "-+*/()[]{}^,"
+
+FUNCTIONS = {
+    "log":math.log
+}
 
 closing_bracket = {
     "(": ")",
@@ -25,12 +30,38 @@ class Parser:
                 raise ValueError(f"Expected '{closing}'")
             self.position += 1
             return value
+        elif self.current() in FUNCTIONS:
+            return self.functions()
         else:
             if self.current() is None:
                 raise ValueError("Expected a number or '('")
             value = float(self.current())
             self.position += 1
             return value
+
+    def functions(self):
+        name = self.current()
+        self.position += 1
+
+        if self.current() != "(":
+            raise ValueError(f"Expected '(' after {name}")
+
+        self.position += 1
+        x = self.expression()
+
+        if self.current() != ",":
+            raise ValueError("Expected ','")
+        
+
+        self.position += 1
+        base = self.expression()
+
+        if self.current() != ")":
+            raise ValueError("Expected ')'")
+        self.position += 1
+        return FUNCTIONS[name](x,base)
+        
+
 
     def power(self):
         value = self.unary()
@@ -110,8 +141,19 @@ def tokenizer(expression):
         elif char in OPERATORS:
             token.append(char)
             i += 1
+        
         elif char.isspace():
             i += 1
+
+        elif char.isalpha():
+            name = ""
+            while i<len(expression) and (expression[i].isalpha()):
+                name += expression[i]
+                i += 1
+
+            if name not in FUNCTIONS:
+                raise ValueError(f"Invalid Function: {name}")
+            token.append(name)
         else:
             raise ValueError(f"Invalid character: {char}")
     return token
