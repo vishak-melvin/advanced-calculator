@@ -1,4 +1,9 @@
+import math
 OPERATORS = "-+*/()[]{}^"
+
+FUNCTIONS = {
+    "log":math.log
+}
 
 closing_bracket = {
     "(": ")",
@@ -110,8 +115,19 @@ def tokenizer(expression):
         elif char in OPERATORS:
             token.append(char)
             i += 1
+        
         elif char.isspace():
             i += 1
+
+        elif char.isalpha():
+            name = ""
+            while i<len(expression) and (expression[i].isalpha()):
+                name += expression[i]
+                i += 1
+
+            if name not in FUNCTIONS:
+                raise ValueError(f"Invalid Function: {name}")
+            token.append(name)
         else:
             raise ValueError(f"Invalid character: {char}")
     return token
