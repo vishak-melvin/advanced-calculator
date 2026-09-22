@@ -1,4 +1,24 @@
 import math
+
+def help():
+    print(
+        """
+OPERATORS:
++    - Addition
+-    - Subraction
+*    - Multiplication
+/    - Division
+^    - Exponentiation
+
+FUNCTIONS:
+log   - Logarithm
+
+COMMANDS:
+exit  - Exit calculator
+help  - Display this help
+        """
+    )
+
 OPERATORS = "-+*/()[]{}^,"
 
 FUNCTIONS = {
@@ -162,6 +182,7 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
+print("you can enter 'help' if your unsure")
 while(True):
     expression = input("enter an expression: ")
     if not expression.strip():
@@ -169,6 +190,9 @@ while(True):
     try:
         if(expression=="exit"):
             break
+        if(expression=="help"):
+            help()
+            continue
         tokens = tokenizer(expression)
         parser = Parser(tokens)
         result = parser.expression()
