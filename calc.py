@@ -1,4 +1,7 @@
 import math
+from prompt_toolkit import prompt, PromptSession
+from prompt_toolkit.history import InMemoryHistory
+
 
 def help():
     print(
@@ -16,6 +19,8 @@ log   - Logarithm
 COMMANDS:
 exit  - Exit calculator
 help  - Display this help
+UP    - go up in history
+DOWN  - go down in history
         """
     )
 
@@ -182,9 +187,11 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
+history = InMemoryHistory()
+session = PromptSession(history=history)
 print("you can enter 'help' if your unsure")
 while(True):
-    expression = input("enter an expression: ")
+    expression = session.prompt("enter an expression: ")
     if not expression.strip():
         raise ValueError("Expression cannot be empty")
     try:
