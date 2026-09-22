@@ -30,6 +30,13 @@ FUNCTIONS = {
     "log": (math.log, 1, 2)
 }
 
+CONSTANTS = {
+    "pi": math.pi,
+    "e": math.e,
+    "tau": math.tau,
+    "phi": (1+math.sqrt(5))/2,
+}
+
 closing_bracket = {
     "(": ")",
     "[": "]",
@@ -40,8 +47,14 @@ class Parser:
         self.tokens = tokens
         self.position = 0
 
+    def parse(self):
+        value = self.expression()
+        if self.current() is not None:
+            raise ValueError(f"Unexpected token: {self.current()}")
+        return value
+
     def current(self):
-        if self.position >= len(tokens):
+        if self.position >= len(self.tokens):
             return None
         return self.tokens[self.position]
     
@@ -57,6 +70,10 @@ class Parser:
             return value
         elif self.current() in FUNCTIONS:
             return self.functions()
+        elif self.current() in CONSTANTS:
+            value = CONSTANTS[self.current()]
+            self.position += 1
+            return value
         else:
             if self.current() is None:
                 raise ValueError("Expected a number or '('")
@@ -180,7 +197,7 @@ def tokenizer(expression):
                 name += expression[i]
                 i += 1
 
-            if name not in FUNCTIONS:
+            if name not in FUNCTIONS | CONSTANTS:
                 raise ValueError(f"Invalid Function: {name}")
             token.append(name)
         else:
@@ -202,7 +219,7 @@ while(True):
             continue
         tokens = tokenizer(expression)
         parser = Parser(tokens)
-        result = parser.expression()
+        result = parser.parse()
         print(result)
     except ValueError as error:
         print("Error:", error)
