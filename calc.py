@@ -16,6 +16,12 @@ OPERATORS:
 FUNCTIONS:
 log   - Logarithm
 
+CONSTANTS:
+pi     - circle constant
+e      - natural number 
+tau    - 2*pi
+phi    - golden ratio
+
 COMMANDS:
 exit  - Exit calculator
 help  - Display this help
