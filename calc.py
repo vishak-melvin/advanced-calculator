@@ -1,38 +1,7 @@
 import math
 from prompt_toolkit import prompt, PromptSession
 from prompt_toolkit.history import InMemoryHistory
-
-
-def help():
-    print(
-        """
-OPERATORS:
-+    - Addition
--    - Subraction
-*    - Multiplication
-/    - Division
-^    - Exponentiation
-
-FUNCTIONS:
-log   - Logarithm
-
-CONSTANTS:
-pi     - circle constant
-e      - natural number 
-tau    - 2*pi
-phi    - golden ratio
-
-MODES:
-sci - prefer scientific notation
-dec - prefer decimal notation
-
-COMMANDS:
-exit  - Exit calculator
-help  - Display this help
-UP    - go up in history
-DOWN  - go down in history
-        """
-    )
+from commands import COMMANDS
 
 OPERATORS = "-+*/()[]{}^,"
 
@@ -229,41 +198,39 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
-def format(result,mode):
+def format(result,mode,precision):
     if mode == "dec":
-        return str(result)
+        return f"{result:.{precision}f}"
     elif mode == "sci":
-        return f"{result:.3e}"
+        return f"{result:.{precision}e}"
 
 history = InMemoryHistory()
 session = PromptSession(history=history)
 print("you can enter 'help' if your unsure")
-mode = "dec"
+state = {
+    "mode": "dec",
+    "precision": 9
+}
 while(True):
     expression = session.prompt("enter an expression: ")
+    parts = expression.split()
+    command = parts[0]
     if not expression.strip():
         raise ValueError("Expression cannot be empty")
     try:
-        if(expression=="sci"):
-            print("switched to scienctific notation")
-            mode = "sci"
-            continue
-        elif(expression=="dec"):
-            print("switched to decimal notation")
-            mode = "dec"
-            continue
-        elif(expression=="mode"):
-            print(f"current mode is {mode}")
+        if command in COMMANDS:
+            if len(parts)==1:
+                COMMANDS[command](state)
+            elif len(parts)==2:
+                value = int(parts[1])
+                COMMANDS[command](state,value)
             continue
         if(expression=="exit"):
             break
-        if(expression=="help"):
-            help()
-            continue
         tokens = tokenizer(expression)
         parser = Parser(tokens)
         result = parser.parse()
-        print(format(result,mode))
+        print(format(result,state["mode"],state["precision"]))
     except ValueError as error:
         print("Error:", error)
     except ZeroDivisionError:
