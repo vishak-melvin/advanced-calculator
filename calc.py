@@ -233,9 +233,9 @@ while(True):
         if command in COMMANDS:
             if len(parts)==1:
                 COMMANDS[command](state)
-            elif len(parts)==2:
-                value = parts[1]
-                COMMANDS[command](state,value)
+            elif len(parts) > 1:
+                value = parts[1:]
+                COMMANDS[command](state,*value)
             continue
         if(expression=="exit"):
             break
