@@ -3,10 +3,21 @@ from prompt_toolkit import prompt, PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from commands import COMMANDS
 
+def to_rad(val):
+    if state["angle"] == "deg":
+        val = math.radians(val)
+    return val
+
+
+def sin(val):
+    return math.sin(to_rad(val))
+
+
 OPERATORS = "-+*/()[]{}^,"
 
 FUNCTIONS = {
-    "log": (math.log, 1, 2)
+    "log": (math.log, 1, 2),
+    "sin": (sin,1,1)
 }
 
 CONSTANTS = {
@@ -209,7 +220,8 @@ session = PromptSession(history=history)
 print("you can enter 'help' if your unsure")
 state = {
     "mode": "dec",
-    "precision": 9
+    "precision": 9,
+    "angle": "rad",
 }
 while(True):
     expression = session.prompt("enter an expression: ")
@@ -222,7 +234,7 @@ while(True):
             if len(parts)==1:
                 COMMANDS[command](state)
             elif len(parts)==2:
-                value = int(parts[1])
+                value = parts[1]
                 COMMANDS[command](state,value)
             continue
         if(expression=="exit"):
