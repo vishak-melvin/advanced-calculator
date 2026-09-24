@@ -185,6 +185,21 @@ def tokenizer(expression):
                 digits += expression[i]
                 i += 1
 
+            if i<len(expression) and expression[i] in "eE":
+                digits += expression[i]
+                i += 1
+            
+                if i<len(expression) and expression[i] in "-+":
+                    digits += expression[i]
+                    i += 1
+
+                if i >= len(expression) or not expression[i].isdigit():
+                    raise ValueError("invalid scientific notation")
+
+                while i<len(expression) and expression[i].isdigit():
+                    digits += expression[i]
+                    i += 1
+
             if digit_count < 1:
                 raise ValueError(f"invalid number: {digits}")
                 
