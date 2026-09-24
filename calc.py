@@ -22,6 +22,10 @@ e      - natural number
 tau    - 2*pi
 phi    - golden ratio
 
+MODES:
+sci - prefer scientific notation
+dec - prefer decimal notation
+
 COMMANDS:
 exit  - Exit calculator
 help  - Display this help
@@ -225,14 +229,32 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
+def format(result,mode):
+    if mode == "dec":
+        return str(result)
+    elif mode == "sci":
+        return f"{result:.3e}"
+
 history = InMemoryHistory()
 session = PromptSession(history=history)
 print("you can enter 'help' if your unsure")
+mode = "dec"
 while(True):
     expression = session.prompt("enter an expression: ")
     if not expression.strip():
         raise ValueError("Expression cannot be empty")
     try:
+        if(expression=="sci"):
+            print("switched to scienctific notation")
+            mode = "sci"
+            continue
+        elif(expression=="dec"):
+            print("switched to decimal notation")
+            mode = "dec"
+            continue
+        elif(expression=="mode"):
+            print(f"current mode is {mode}")
+            continue
         if(expression=="exit"):
             break
         if(expression=="help"):
@@ -241,7 +263,7 @@ while(True):
         tokens = tokenizer(expression)
         parser = Parser(tokens)
         result = parser.parse()
-        print(result)
+        print(format(result,mode))
     except ValueError as error:
         print("Error:", error)
     except ZeroDivisionError:
