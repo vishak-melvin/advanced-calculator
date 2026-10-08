@@ -223,7 +223,7 @@ def calculate(expression):
 
 def format(result, mode, precision):
     if mode == "dec":
-        return f"{result:.{precision}f}"
+        return f"{result:.{precision}g}"
 
     elif mode == "sci":
         return f"{result:.{precision}e}"
