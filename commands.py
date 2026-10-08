@@ -44,7 +44,10 @@ OPERATORS:
 ^    - Exponentiation
 
 FUNCTIONS:
-log   - Logarithm
+log   - log(power,base) default is natural log
+sin   - sine trignometric function
+cos   - cosine trignometric function
+tan   - tangent trignometric function
 
 CONSTANTS:
 pi     - circle constant
@@ -55,6 +58,8 @@ phi    - golden ratio
 MODES:
 sci - prefer scientific notation
 dec - prefer decimal notation
+rad - use radians
+deg - use degrees
 
 COMMANDS:
 exit        - Exit calculator

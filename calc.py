@@ -12,6 +12,12 @@ def to_rad(val):
 def sin(val):
     return math.sin(to_rad(val))
 
+def cos(val):
+    return math.cos(to_rad(val))
+
+def tan(val):
+    return math.tan(to_rad(val))
+
 
 OPERATORS = "-+*/()[]{}^,"
 
