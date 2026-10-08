@@ -1,45 +1,45 @@
 import math
-from prompt_toolkit import prompt, PromptSession
-from prompt_toolkit.history import InMemoryHistory
-from commands import COMMANDS
+
+state = {
+    "mode": "dec",
+    "precision": 9,
+    "angle": "rad",
+}
 
 def to_rad(val):
     if state["angle"] == "deg":
         val = math.radians(val)
     return val
 
-
 def sin(val):
     return math.sin(to_rad(val))
-
 def cos(val):
     return math.cos(to_rad(val))
-
 def tan(val):
     return math.tan(to_rad(val))
-
 
 OPERATORS = "-+*/()[]{}^,"
 
 FUNCTIONS = {
     "log": (math.log, 1, 2),
-    "sin": (sin,1,1),
-    "tan": (tan,1,1),
-    "cos": (cos,1,1),
+    "sin": (sin, 1, 1),
+    "tan": (tan, 1, 1),
+    "cos": (cos, 1, 1),
 }
 
 CONSTANTS = {
     "pi": math.pi,
     "e": math.e,
     "tau": math.tau,
-    "phi": (1+math.sqrt(5))/2,
+    "phi": (1 + math.sqrt(5)) / 2,
 }
 
 closing_bracket = {
     "(": ")",
     "[": "]",
-    "{": "}"
+    "{": "}",
 }
+
 class Parser:
     def __init__(self,tokens):
         self.tokens = tokens
@@ -105,8 +105,6 @@ class Parser:
             raise ValueError(f"{name} expects {min_args} to {max_args} arguements")
         return function(*arguments)
         
-
-
     def power(self):
         value = self.unary()
         if self.current() == "^":
@@ -217,43 +215,14 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
-def format(result,mode,precision):
+def calculate(expression):
+    tokens = tokenizer(expression)
+    parser = Parser(tokens)
+    return parser.parse()
+
+def format(result, mode, precision):
     if mode == "dec":
         return f"{result:.{precision}f}"
+
     elif mode == "sci":
         return f"{result:.{precision}e}"
-
-history = InMemoryHistory()
-session = PromptSession(history=history)
-print("you can enter 'help' if your unsure")
-state = {
-    "mode": "dec",
-    "precision": 9,
-    "angle": "rad",
-}
-while(True):
-    expression = session.prompt("enter an expression: ")
-    parts = expression.split()
-    command = parts[0]
-    if not expression.strip():
-        raise ValueError("Expression cannot be empty")
-    try:
-        if command in COMMANDS:
-            if len(parts)==1:
-                COMMANDS[command](state)
-            elif len(parts) > 1:
-                value = parts[1:]
-                COMMANDS[command](state,*value)
-            continue
-        if(expression=="exit"):
-            break
-        tokens = tokenizer(expression)
-        parser = Parser(tokens)
-        result = parser.parse()
-        print(format(result,state["mode"],state["precision"]))
-    except ValueError as error:
-        print("Error:", error)
-    except ZeroDivisionError:
-        print("Error: division by zero")
-    except Exception as e:
-        print(f"Error:{e}")
