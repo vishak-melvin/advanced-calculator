@@ -1,4 +1,5 @@
 import math
+from commands import COMMANDS
 
 state = {
     "mode": "dec",
@@ -226,3 +227,22 @@ def format(result, mode, precision):
 
     elif mode == "sci":
         return f"{result:.{precision}e}"
+
+def process(expression):
+    if not expression.strip():
+        raise ValueError("Expression cannot be empty")
+
+    parts = expression.split()
+    command = parts[0]
+
+    if command in COMMANDS:
+        values = parts[1:]
+        return COMMANDS[command](state, *values)
+
+    result = calculate(expression)
+
+    return format(
+        result,
+        state["mode"],
+        state["precision"]
+    )

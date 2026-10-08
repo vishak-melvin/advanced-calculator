@@ -1,7 +1,7 @@
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 
-from calculator import calculate, format, state
+from calculator import process, format, state
 from commands import COMMANDS
 
 history = InMemoryHistory()
@@ -10,24 +10,12 @@ print("you can enter 'help' if you're unsure")
 while True:
     try:
         expression = session.prompt("enter an expression: ")
-
-        if not expression.strip():
-            raise ValueError("Expression cannot be empty")
-
         if expression == "exit":
             break
 
-        parts = expression.split()
-        command = parts[0]
-
-        if command in COMMANDS:
-            values = parts[1:]
-            COMMANDS[command](state, *values)
-            continue
-
-        result = calculate(expression)
-
-        print(format(result, state["mode"], state["precision"]))
+        result = process(expression)
+        if result is not None:
+            print(result)
 
     except ValueError as error:
         print("Error:", error)

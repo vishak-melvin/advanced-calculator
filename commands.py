@@ -1,24 +1,22 @@
 def mode(state,*val):
     if len(val)==0:
-        print(f"Formatting mode: {state["mode"]}")
-        print(f"Angle mode: {state["angle"]}")
+        return(f"Formatting mode: {state["mode"]} \nAngle mode: {state["angle"]}")
     else:
         if len(val) > 2:
             raise ValueError("mode cannot have more than 2 arguements")
         for value in val:
             if value in ("sci","dec"):
                 state["mode"] = value
-                print(f"switched formatting to {value} mode")
+                return(f"switched formatting to {value} mode")
             elif value in ("rad","deg"):
                 state["angle"] = value
-                print(f"switched angle mode to {value}")
+                return(f"switched angle mode to {value}")
             else:
                 raise ValueError(f"invalid mode: {value}")
 
 def precision(state,*val):
     if len(val)==0:
-        print(f"current precision is {state["precision"]}")
-        return
+        return(f"current precision is {state["precision"]}")
     if len(val) > 1:
         raise ValueError("precision cannot have more than 1 arguement")
     
@@ -34,7 +32,7 @@ def precision(state,*val):
 
 
 def help(state):
-    print(
+    return(
         """
 OPERATORS:
 +    - Addition
