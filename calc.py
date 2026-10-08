@@ -23,7 +23,9 @@ OPERATORS = "-+*/()[]{}^,"
 
 FUNCTIONS = {
     "log": (math.log, 1, 2),
-    "sin": (sin,1,1)
+    "sin": (sin,1,1),
+    "tan": (tan,1,1),
+    "cos": (cos,1,1),
 }
 
 CONSTANTS = {
