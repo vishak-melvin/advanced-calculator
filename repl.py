@@ -1,8 +1,7 @@
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 
-from calculator import process, format, state
-from commands import COMMANDS
+from calculator import process
 
 history = InMemoryHistory()
 session = PromptSession(history=history)

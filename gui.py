@@ -1,9 +1,8 @@
 import sys
-from calculator import process, format, state
-from commands import COMMANDS
+from calculator import process
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
-QVBoxLayout, QWidget, QLabel)
+QVBoxLayout, QWidget, QLabel, QScrollArea)
 from PySide6.QtCore import Qt
 app = QApplication(sys.argv)
 
@@ -46,11 +45,19 @@ window.setWindowTitle("Calculator")
 central = QWidget()
 layout = QVBoxLayout(central)
 result_label = QLabel()
+intro_label = QLabel("type 'help' if unsure")
+
+scroll_area = QScrollArea()
+scroll_area.setWidget(result_label)
+scroll_area.setWidgetResizable(True)
+result_label.setWordWrap(True)
+result_label.setAlignment(Qt.AlignmentFlag.AlignTop)
 
 input_box = History()
 window.setCentralWidget(input_box)
-layout.addWidget(result_label)
-layout.addStretch()
+
+layout.addWidget(intro_label)
+layout.addWidget(scroll_area, 1)
 layout.addWidget(input_box)
 window.setCentralWidget(central)
 
@@ -61,7 +68,8 @@ def evaluate():
     if expression == "exit":
         window.close()
         return
-    
+    intro_label.hide()
+
     try:
         result = process(expression)
         if result is not None:
