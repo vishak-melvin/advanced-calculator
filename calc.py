@@ -255,3 +255,5 @@ while(True):
         print("Error:", error)
     except ZeroDivisionError:
         print("Error: division by zero")
+    except Exception as e:
+        print(f"Error:{e}")
