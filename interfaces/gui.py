@@ -1,6 +1,7 @@
 import sys
-from calculator import process
+from calculator import process, parse
 from Latex.latex_renderer import LatexRenderer
+from Latex.latex_converter import toLatex
 from commands import getHelp
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
@@ -52,9 +53,18 @@ class History(QLineEdit):
         else:
             super().keyPressEvent(event)
 
-def update_preview():
-    expression = input_box.text()
-    preview.set_latex(expression)
+def update_preview(input_box, preview):
+    expression = input_box.text().strip()
+
+    if not expression:
+        preview.set_latex("")
+        return
+    try:
+        ast = parse(expression)
+        latex = toLatex(ast)
+        preview.set_latex(latex)
+    except (ValueError, KeyError, TypeError, IndexError):
+        preview.set_latex("")
     
 
 window = QMainWindow()
@@ -80,6 +90,7 @@ input_box = History()
 preview_timer = QTimer()
 preview_timer.setSingleShot(True)
 preview_timer.setInterval(100)
+preview_timer.timeout.connect(lambda: update_preview(input_box, preview))
 
 layout.addWidget(intro_label)
 layout.addWidget(preview)
@@ -88,7 +99,6 @@ layout.addWidget(input_box)
 window.setCentralWidget(central)
 
 input_box.textChanged.connect(lambda:preview_timer.start())
-preview_timer.timeout.connect(update_preview)
 
 def evaluate():
     expression = input_box.text()
