@@ -1,5 +1,6 @@
 import sys
 from calculator import process
+from Latex.latex_renderer import LatexRenderer
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
 QVBoxLayout, QWidget, QLabel, QScrollArea)
@@ -41,7 +42,7 @@ class History(QLineEdit):
 
 def update_preview():
     expression = input_box.text()
-    preview_label.setText(expression)
+    preview.set_latex(expression)
     
 
 window = QMainWindow()
@@ -52,8 +53,8 @@ layout = QVBoxLayout(central)
 result_label = QLabel()
 intro_label = QLabel("type 'help' if unsure")
 
-preview_label = QLabel()
-preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+preview = LatexRenderer()
+preview.setFixedHeight(100)
 
 scroll_area = QScrollArea()
 scroll_area.setWidget(result_label)
@@ -69,7 +70,7 @@ preview_timer.setSingleShot(True)
 preview_timer.setInterval(100)
 
 layout.addWidget(intro_label)
-layout.addWidget(preview_label)
+layout.addWidget(preview)
 layout.addWidget(scroll_area, 1)
 layout.addWidget(input_box)
 window.setCentralWidget(central)
