@@ -48,58 +48,96 @@ closing_bracket = {
 }
 
 class Parser:
-    def __init__(self,tokens):
+    def __init__(self, tokens):
         self.tokens = tokens
         self.position = 0
-
-    def parse(self):
-        value = self.expression()
-        if self.current() is not None:
-            raise ValueError(f"Unexpected token: {self.current()}")
-        return value
 
     def current(self):
         if self.position >= len(self.tokens):
             return None
         return self.tokens[self.position]
-    
-    def factor(self):
-        if self.current() in closing_bracket:
-            opening = self.current()
-            closing = closing_bracket[opening]
+
+    def parse(self):
+        node = self.expression()
+        if self.current() is not None:
+            raise ValueError(f"Unexpected token: {self.current()}")
+        return node
+
+    def expression(self):
+        node = self.term()
+        while self.current() in ("+", "-"):
+            operator = self.current()
             self.position += 1
-            value = self.expression()
-            if self.position >= len(self.tokens) or self.current() != closing:
+            right = self.term()
+            node = ("bin", operator, node, right)
+        return node
+
+    def term(self):
+        node = self.unary()
+        while self.current() in ("*", "/"):
+            operator = self.current()
+            self.position += 1
+            right = self.unary()
+            node = ("bin", operator, node, right)
+        return node
+
+    def unary(self):
+        if self.current() == "-":
+            self.position += 1
+            return ("neg", self.unary())
+        elif self.current() == "+":
+            self.position += 1
+            return self.unary()
+        return self.power()
+
+    def power(self):
+        base = self.factor()
+        if self.current() == "^":
+            self.position += 1
+            exponent = self.unary()
+            return ("pow", base, exponent)
+        return base
+
+    def factor(self):
+        token = self.current()
+
+        if token is None:
+            raise ValueError("Expected a number or '('")
+
+        if token in closing_bracket:
+            closing = closing_bracket[token]
+            self.position += 1
+            inner = self.expression()
+            if self.current() != closing:
                 raise ValueError(f"Expected '{closing}'")
             self.position += 1
-            return value
-        elif self.current() in FUNCTIONS:
+            return ("group", token, inner)
+
+        if token in FUNCTIONS:
             return self.functions()
-        elif self.current() in CONSTANTS:
-            value = CONSTANTS[self.current()]
+
+        if token in CONSTANTS:
             self.position += 1
-            return value
-        else:
-            if self.current() is None:
-                raise ValueError("Expected a number or '('")
-            value = float(self.current())
-            self.position += 1
-            return value
+            return ("const", token)
+
+        if token in OPERATORS:
+            raise ValueError(f"Unexpected token: {token}")
+
+        self.position += 1
+        return ("num", token)         # keep original text; converted in evaluate
 
     def functions(self):
         name = self.current()
         self.position += 1
-
-        function, min_args, max_args = FUNCTIONS[name]
+        _, min_args, max_args = FUNCTIONS[name]
 
         if self.current() != "(":
             raise ValueError(f"Expected '(' after {name}")
         self.position += 1
-        arguments = []
 
+        arguments = []
         if self.current() != ")":
             arguments.append(self.expression())
-
             while self.current() == ",":
                 self.position += 1
                 arguments.append(self.expression())
@@ -108,57 +146,9 @@ class Parser:
             raise ValueError("Expected ')'")
         self.position += 1
 
-        if len(arguments) < min_args or len(arguments) > max_args:
-            raise ValueError(f"{name} expects {min_args} to {max_args} arguements")
-        return function(*arguments)
-        
-    def power(self):
-        value = self.unary()
-        if self.current() == "^":
-            self.position += 1
-            exponent = self.power()
-            value = value ** exponent
-        return value
-
-    def unary(self):
-        if self.current() == "-":
-            self.position += 1
-            value = self.unary()
-            return -value
-        elif self.current() == "+":
-            self.position += 1
-            value = self.unary()
-            return value
-        else:
-            return self.factor();
-
-    def term(self):
-        value = self.power()
-
-        while self.position < len(self.tokens) and self.current() in ("*","/"):
-            operator = self.current()
-            self.position += 1
-
-            right = self.power()
-            if operator == "*":
-                value *= right
-            else:
-                value /= right
-        return value
-
-    def expression(self):
-        value = self.term()
-
-        while self.position < len(self.tokens) and self.current() in ("+","-"):
-            operator = self.current()
-            self.position += 1
-
-            right = self.term()
-            if operator == "+":
-                value += right
-            else:
-                value -= right
-        return value
+        if not (min_args <= len(arguments) <= max_args):
+            raise ValueError(f"{name} expects {min_args} to {max_args} arguments")
+        return ("func", name, arguments)
 
 def tokenizer(expression):
     token = []
@@ -222,10 +212,43 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
+def evaluate(node):
+    kind = node[0]
+
+    if kind == "num":
+        return float(node[1])
+
+    if kind == "const":
+        return CONSTANTS[node[1]]
+
+    if kind == "group":
+        return evaluate(node[2])
+
+    if kind == "neg":
+        return -evaluate(node[1])
+
+    if kind == "pow":
+        return evaluate(node[1]) ** evaluate(node[2])
+
+    if kind == "bin":
+        _, op, left, right = node
+        left, right = evaluate(left), evaluate(right)
+        if op == "+": return left + right
+        if op == "-": return left - right
+        if op == "*": return left * right
+        return left / right
+
+    if kind == "func":
+        _, name, args = node
+        return FUNCTIONS[name][0](*[evaluate(a) for a in args])
+
+    raise ValueError(f"Unknown node: {kind}")
+
+def parse(expression):
+    return Parser(tokenizer(expression)).parse()
+
 def calculate(expression):
-    tokens = tokenizer(expression)
-    parser = Parser(tokens)
-    return parser.parse()
+    return evaluate(parse(expression))
 
 def format(result, mode, precision):
     if mode == "dec":
