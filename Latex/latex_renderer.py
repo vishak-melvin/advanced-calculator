@@ -8,34 +8,11 @@ class LatexRenderer(QWebEngineView):
     def __init__(self, parent=None):
         super().__init__(parent)
         katexDir = Path(__file__).parent / "vendor" / "katex"
+        htmlPath = Path(__file__).parent / "preview.html"
         self._ready = False
         self._pending_latex = ""
 
-        html = r"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <link rel="stylesheet" href="katex.min.css">
-            <script src="katex.min.js"></script>
-        </head>
-        <body>
-            <div id="math"></div>
-            <script>
-                window.renderMath = function(latex){
-                    katex.render(
-                        latex,
-                        document.getElementById("math"),
-                        {
-                        displayMode:true,
-                        throwOnError: false
-                        }
-                    );
-                }
-            </script>
-        </body>
-        </html>
-        """
+        html = htmlPath.read_text(encoding="utf-8")
         self.loadFinished.connect(self._on_load_finished)
         self.setHtml(html, QUrl.fromLocalFile(str(katexDir.resolve()) + "/"))
 
@@ -55,3 +32,9 @@ class LatexRenderer(QWebEngineView):
         encoded_latex = json.dumps(latex)
         script = f"window.renderMath({encoded_latex});"
         self.page().runJavaScript(script)
+
+    def set_darkmode(self, enabled):
+        if not self._ready:
+            return
+
+        self.page().runJavaScript(f"window.setDarkMode({str(enabled).lower()});")

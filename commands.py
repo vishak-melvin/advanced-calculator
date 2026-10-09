@@ -31,9 +31,20 @@ def precision(state,*val):
     state["precision"] = val
 
 
+def getHelp(extra_commands=None):
+    text = HELP
+    if extra_commands:
+        extra_text = "\n".join(
+            f"{name}      {desc}"
+            for name, desc in extra_commands.items()
+        )
+        text += "\n" + extra_text
+    return text
+
 def help(state):
-    return(
-        """
+    return getHelp()
+
+HELP = """
 OPERATORS:
 +    - Addition
 -    - Subraction
@@ -67,7 +78,6 @@ DOWN        - go down in history
 mode        - display current formatting mode
 precision   - display decimal precision or set a value after command
         """
-    )
 
 COMMANDS = {
     "mode":mode,

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="katex.min.css">
+    <script src="katex.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 12px;
+            background: #ffffff;
+            color: #202124;
+            font-family: sans-serif;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        #math {
+            text-align: centre;
+            overflow-x: auto;
+        }
+
+        body.dark {
+            background: #1e1e2e;
+            color: #cdd6f4;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="math"></div>
+    <script>
+        window.renderMath = function(latex){
+            katex.render(
+                latex,
+                document.getElementById("math"),
+                {
+                displayMode:true,
+                throwOnError: false
+                }
+            );
+        }
+
+        window.setDarkMode = function(enabled) {
+            document.body.classList.toggle("dark",enabled)
+        };
+    </script>
+</body>
+</html>

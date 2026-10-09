@@ -1,11 +1,23 @@
 import sys
 from calculator import process
 from Latex.latex_renderer import LatexRenderer
+from commands import getHelp
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
 QVBoxLayout, QWidget, QLabel, QScrollArea)
 from PySide6.QtCore import Qt, QTimer
 app = QApplication(sys.argv)
+
+GUI_COMMANDS = {
+    "GUI SPECIFIC COMMANDS": "",
+    "dark": "-toggle dark mode for Latex preview",
+}
+
+latex_dark = False
+def toggle_theme():
+    global latex_dark
+    latex_dark = not latex_dark
+    preview.set_darkmode(latex_dark)
 
 class History(QLineEdit):
     MAX_HISTORY = 100
@@ -85,6 +97,18 @@ def evaluate():
     if expression == "exit":
         window.close()
         return
+    if expression == "help":
+        result_label.setText(
+            getHelp(extra_commands=GUI_COMMANDS)
+        )
+        input_box.clear()
+        return
+    if expression == "dark":
+        toggle_theme()
+        result_label.setText(f"Latex dark mode: {'on' if latex_dark else 'off'}")
+        input_box.clear()
+        return
+    
     intro_label.hide()
 
     try:
