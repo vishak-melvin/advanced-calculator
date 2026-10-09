@@ -3,7 +3,7 @@ from calculator import process
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
 QVBoxLayout, QWidget, QLabel, QScrollArea)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 app = QApplication(sys.argv)
 
 class History(QLineEdit):
@@ -39,6 +39,11 @@ class History(QLineEdit):
         else:
             super().keyPressEvent(event)
 
+def update_preview():
+    expression = input_box.text()
+    preview_label.setText(expression)
+    
+
 window = QMainWindow()
 window.setWindowTitle("Calculator")
 
@@ -47,19 +52,30 @@ layout = QVBoxLayout(central)
 result_label = QLabel()
 intro_label = QLabel("type 'help' if unsure")
 
+preview_label = QLabel()
+preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
 scroll_area = QScrollArea()
 scroll_area.setWidget(result_label)
 scroll_area.setWidgetResizable(True)
 result_label.setWordWrap(True)
 result_label.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+
 input_box = History()
-window.setCentralWidget(input_box)
+
+preview_timer = QTimer()
+preview_timer.setSingleShot(True)
+preview_timer.setInterval(100)
 
 layout.addWidget(intro_label)
+layout.addWidget(preview_label)
 layout.addWidget(scroll_area, 1)
 layout.addWidget(input_box)
 window.setCentralWidget(central)
+
+input_box.textChanged.connect(lambda:preview_timer.start())
+preview_timer.timeout.connect(update_preview)
 
 def evaluate():
     expression = input_box.text()
