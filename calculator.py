@@ -72,13 +72,23 @@ class Parser:
             node = ("bin", operator, node, right)
         return node
 
+    def starts_factor(self):
+        token = self.current()
+        return token is not None and (token in closing_bracket or token in FUNCTIONS or token in CONSTANTS)
+
     def term(self):
         node = self.unary()
-        while self.current() in ("*", "/"):
-            operator = self.current()
-            self.position += 1
-            right = self.unary()
-            node = ("bin", operator, node, right)
+        while True:
+            if self.current() in ("*", "/"):
+                operator = self.current()
+                self.position += 1
+                right = self.unary()
+                node = ("bin", operator, node, right)
+            elif self.starts_factor():
+                right = self.unary()
+                node = ("imul", node, right)
+            else:
+                break
         return node
 
     def unary(self):
@@ -124,7 +134,7 @@ class Parser:
             raise ValueError(f"Unexpected token: {token}")
 
         self.position += 1
-        return ("num", token)         # keep original text; converted in evaluate
+        return ("num", token)
 
     def functions(self):
         name = self.current()
@@ -241,6 +251,9 @@ def evaluate(node):
     if kind == "func":
         _, name, args = node
         return FUNCTIONS[name][0](*[evaluate(a) for a in args])
+
+    if kind == "imul":
+        return evaluate(node[1]) * evaluate(node[2])
 
     raise ValueError(f"Unknown node: {kind}")
 
