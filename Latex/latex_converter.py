@@ -10,6 +10,7 @@ CONSTANT = {
     "e": "e",
     "tau": r"\tau",
     "phi": r"\varphi",
+    "i": "i",
 }
 
 BRACKET = {

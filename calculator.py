@@ -39,6 +39,7 @@ CONSTANTS = {
     "e": math.e,
     "tau": math.tau,
     "phi": (1 + math.sqrt(5)) / 2,
+    "i": complex(0,1),
 }
 
 closing_bracket = {
@@ -264,11 +265,30 @@ def calculate(expression):
     return evaluate(parse(expression))
 
 def format(result, mode, precision):
-    if mode == "dec":
-        return f"{result:.{precision}g}"
+    def format_num(value):
+        if mode == "dec":
+            return f"{value:.{precision}g}"
 
-    elif mode == "sci":
-        return f"{result:.{precision}e}"
+        elif mode == "sci":
+            return f"{value:.{precision}e}"
+
+    if isinstance(result, complex):
+        real = result.real
+        img = result.imag
+        if img == 0:
+            return format_num(real)
+        if real == 0:
+            if abs(img) == 1:
+                return "-i" if img < 0 else "i"                
+            else:
+                return f"{"-" if img<0 else ""}{format_num(abs(img))}i"
+
+        real_str = format_num(real)
+        img_str = format_num(abs(img)) if abs(img) != 1 else ""
+
+        sign = "-" if img<0 else "+"
+        return f"{real_str}{sign}{img_str}i"
+    return format_num(result)
 
 def process(expression):
     if not expression.strip():
