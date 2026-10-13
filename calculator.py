@@ -1,6 +1,6 @@
 import math
 from commands import COMMANDS
-from specfuncs import factorial
+import funcs
 
 state = {
     "mode": "dec",
@@ -26,7 +26,8 @@ def cos(val):
 def tan(val):
     return clean_trig(math.tan,to_rad(val))
 
-OPERATORS = "-+*/()[]{}^,!"
+OPERATORS = "-+*/()[]{}^,"
+WORD_OPS = {"mod"}
 
 FUNCTIONS = {
     "log": (math.log, 1, 2),
@@ -50,7 +51,7 @@ closing_bracket = {
 }
 
 POSTFIX = {
-    "!": (factorial)
+    "!": (funcs.factorial)
 }
 
 class Parser:
@@ -85,7 +86,7 @@ class Parser:
     def term(self):
         node = self.unary()
         while True:
-            if self.current() in ("*", "/"):
+            if self.current() in ("*", "/","mod"):
                 operator = self.current()
                 self.position += 1
                 right = self.unary()
@@ -145,7 +146,7 @@ class Parser:
             self.position += 1
             return ("const", token)
 
-        if token in OPERATORS:
+        if token in OPERATORS or token in POSTFIX or token in WORD_OPS:
             raise ValueError(f"Unexpected token: {token}")
 
         self.position += 1
@@ -217,7 +218,7 @@ def tokenizer(expression):
                 
             token.append(digits)
 
-        elif char in OPERATORS:
+        elif char in OPERATORS or char in POSTFIX:
             token.append(char)
             i += 1
         
@@ -230,7 +231,7 @@ def tokenizer(expression):
                 name += expression[i]
                 i += 1
 
-            if name not in FUNCTIONS | CONSTANTS:
+            if name not in set(FUNCTIONS) | set(CONSTANTS) | WORD_OPS:
                 raise ValueError(f"Invalid Function: {name}")
             token.append(name)
         else:
@@ -261,7 +262,8 @@ def evaluate(node):
         if op == "+": return left + right
         if op == "-": return left - right
         if op == "*": return left * right
-        return left / right
+        if op == "/": return left / right
+        if op == "mod": return left % right
 
     if kind == "func":
         _, name, args = node

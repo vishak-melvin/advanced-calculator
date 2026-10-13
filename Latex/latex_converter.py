@@ -70,6 +70,9 @@ def toLatex(node):
         if op == "*":
             return rf"{left} \cdot {right}"
 
+        if op == "mod":
+            return rf"{left} \bmod {right}"
+
         raise ValueError(f"unknown operator: {op}")
 
     if kind == "func":
