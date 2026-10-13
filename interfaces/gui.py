@@ -53,18 +53,20 @@ class History(QLineEdit):
         else:
             super().keyPressEvent(event)
 
+last_latex = None
 def update_preview(input_box, preview):
+    global last_latex
     expression = input_box.text().strip()
+    latex = ""
 
-    if not expression:
-        preview.set_latex("")
-        return
-    try:
-        ast = parse(expression)
-        latex = toLatex(ast)
+    if expression:
+        try:
+            latex = toLatex(parse(expression))
+        except Exception:
+            return
+    if latex != last_latex:
+        last_latex = latex
         preview.set_latex(latex)
-    except (ValueError, KeyError, TypeError, IndexError):
-        preview.set_latex("")
     
 
 window = QMainWindow()
