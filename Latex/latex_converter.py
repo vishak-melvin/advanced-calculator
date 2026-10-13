@@ -19,6 +19,10 @@ BRACKET = {
     "{": (r"\{",r"\}"),
 }
 
+POSTFIX = {
+    "!": "!"
+}
+
 def unwrap(node):
       return node[2] if node [0] == "group" else node
 
@@ -84,5 +88,9 @@ def toLatex(node):
 
     if kind == "imul":
         return f"{toLatex(node[1])}{toLatex(node[2])}"
+
+    if kind == "post":
+        _, op, operand = node
+        return rf"{{{toLatex(operand)}{op}}}"
 
     raise ValueError(f"Unknown AST node: {kind}")

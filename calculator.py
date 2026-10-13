@@ -1,5 +1,6 @@
 import math
 from commands import COMMANDS
+from specfuncs import factorial
 
 state = {
     "mode": "dec",
@@ -25,7 +26,7 @@ def cos(val):
 def tan(val):
     return clean_trig(math.tan,to_rad(val))
 
-OPERATORS = "-+*/()[]{}^,"
+OPERATORS = "-+*/()[]{}^,!"
 
 FUNCTIONS = {
     "log": (math.log, 1, 2),
@@ -46,6 +47,10 @@ closing_bracket = {
     "(": ")",
     "[": "]",
     "{": "}",
+}
+
+POSTFIX = {
+    "!": (factorial)
 }
 
 class Parser:
@@ -101,8 +106,17 @@ class Parser:
             return self.unary()
         return self.power()
 
+    def postfix(self):
+        node = self.factor()
+        while self.current() in ("!",):
+            operator = self.current()
+            self.position += 1
+            node = ("post",operator,node)
+        return node
+
+
     def power(self):
-        base = self.factor()
+        base = self.postfix()
         if self.current() == "^":
             self.position += 1
             exponent = self.unary()
@@ -255,6 +269,10 @@ def evaluate(node):
 
     if kind == "imul":
         return evaluate(node[1]) * evaluate(node[2])
+
+    if kind == "post":
+        _, op, operand = node
+        return POSTFIX[op](*[evaluate(operand)])
 
     raise ValueError(f"Unknown node: {kind}")
 
