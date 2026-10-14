@@ -1,34 +1,16 @@
 import math
 from commands import COMMANDS
 from state import state
-import funcs
-
-def clean_trig(func, x):
-    result = func(x)
-    if abs(result) < 1e-15 * max(1.0, abs(x)):
-        return 0.0
-    return result
-
-def to_rad(val):
-    if state.angle == "deg":
-        val = math.radians(val)
-    return val
-
-def sin(val):
-    return clean_trig(math.sin,to_rad(val))
-def cos(val):
-    return clean_trig(math.cos,to_rad(val))
-def tan(val):
-    return clean_trig(math.tan,to_rad(val))
+import functions
 
 OPERATORS = "-+*/()[]{}^,"
 WORD_OPS = {"mod"}
 
 FUNCTIONS = {
     "log": (math.log, 1, 2),
-    "sin": (sin, 1, 1),
-    "tan": (tan, 1, 1),
-    "cos": (cos, 1, 1),
+    "sin": (functions.sin, 1, 1),
+    "tan": (functions.tan, 1, 1),
+    "cos": (functions.cos, 1, 1),
 }
 
 CONSTANTS = {
@@ -46,7 +28,7 @@ closing_bracket = {
 }
 
 POSTFIX = {
-    "!": (funcs.factorial)
+    "!": (functions.factorial)
 }
 
 class Parser:
