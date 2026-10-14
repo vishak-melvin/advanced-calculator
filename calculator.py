@@ -7,7 +7,7 @@ OPERATORS = "-+*/()[]{}^,"
 WORD_OPS = {"mod"}
 
 FUNCTIONS = {
-    "log": (math.log, 1, 2),
+    "log": (functions.log, 1, 2),
     "sin": (functions.sin, 1, 1),
     "tan": (functions.tan, 1, 1),
     "cos": (functions.cos, 1, 1),
@@ -278,7 +278,7 @@ def format(result, mode, precision):
             if abs(img) == 1:
                 return "-i" if img < 0 else "i"                
             else:
-                return f"{"-" if img<0 else ""}{format_num(abs(img))}i"
+                return f"{"-" if img<0 else ''}{format_num(abs(img))}i"
 
         real_str = format_num(real)
         img_str = format_num(abs(img)) if abs(img) != 1 else ""
