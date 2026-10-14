@@ -36,3 +36,6 @@ def log(val, base = None):
         r = cmath.log(val) if base == None else cmath.log(val, base)
         return r.real if r.imag == 0 else r
     return math.log(val) if base == None else math.log(val, base)
+
+def sqrt(val):
+    return cmath.sqrt(val)

@@ -3,6 +3,7 @@ FUNCTION = {
     "cos": r"\cos",
     "tan": r"\tan",
     "log": r"\log",
+    "sqrt": r"\sqrt"
 }
 
 CONSTANT = {
@@ -80,10 +81,11 @@ def toLatex(node):
         if name == "log":
             if len(arguments) == 1:
                 return rf"\ln\left({toLatex(arguments[0])}\right)"
-
             value = toLatex(arguments[0])
             base = toLatex(arguments[1])
             return rf"\log_{{{base}}}\left({value}\right)"
+        if name == "sqrt":
+            return rf"\sqrt{{{(toLatex(arguments[0]))}}}"
 
         function = FUNCTION.get(name, rf"\operatorname{{{name}}}")
         args = ",".join(toLatex(arg) for arg in arguments)
