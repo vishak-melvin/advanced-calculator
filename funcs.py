@@ -1,4 +1,5 @@
 import math
+from state import state
 def factorial(x):
     return math.gamma(x+1)
 
@@ -9,7 +10,7 @@ def clean_trig(func, x):
     return result
 
 def to_rad(val):
-    if state["angle"] == "deg":
+    if state.angle == "deg":
         val = math.radians(val)
     return val
 
