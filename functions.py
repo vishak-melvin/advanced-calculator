@@ -37,5 +37,25 @@ def log(val, base = None):
         return r.real if r.imag == 0 else r
     return math.log(val) if base == None else math.log(val, base)
 
-def sqrt(val):
-    return cmath.sqrt(val)
+def root(val,deg=None):
+    if deg is None or deg == 2:
+        return cmath.sqrt(val)
+    if deg == 0:
+        raise ValueError("degree cannot be 0")
+
+    if isinstance(val, complex) or isinstance(deg,complex):
+        return val ** (1/deg)
+
+    if val < 0:
+        if float(deg).is_integer() and int(deg) % 2 == 1:
+            r = -((-val)) ** (1/deg)
+        else:
+            r = val ** (1/deg)
+            return r.real if r.imag == 0 else r
+    else:
+        return val ** (1/deg)
+
+    n = round(r)
+    if float(deg).is_integer() and n**int(deg) == val:
+        return float(n)
+    return r

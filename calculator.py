@@ -11,7 +11,7 @@ FUNCTIONS = {
     "sin": (functions.sin, 1, 1),
     "tan": (functions.tan, 1, 1),
     "cos": (functions.cos, 1, 1),
-    "sqrt": (functions.sqrt, 1, 1),
+    "root": (functions.root, 1, 2),
 }
 
 CONSTANTS = {
