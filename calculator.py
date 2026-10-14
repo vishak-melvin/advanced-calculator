@@ -1,12 +1,7 @@
 import math
 from commands import COMMANDS
+from state import state
 import funcs
-
-state = {
-    "mode": "dec",
-    "precision": 9,
-    "angle": "rad",
-}
 
 def clean_trig(func, x):
     result = func(x)
@@ -15,7 +10,7 @@ def clean_trig(func, x):
     return result
 
 def to_rad(val):
-    if state["angle"] == "deg":
+    if state.angle == "deg":
         val = math.radians(val)
     return val
 
@@ -325,6 +320,6 @@ def process(expression):
 
     return format(
         result,
-        state["mode"],
-        state["precision"]
+        state.format,
+        state.precision
     )
