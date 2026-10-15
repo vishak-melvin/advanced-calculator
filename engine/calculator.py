@@ -1,10 +1,11 @@
-import math
+import math, re
 from engine.commands import COMMANDS
 from engine.state import state
 import engine.functions as functions
 
 OPERATORS = "-+*/()[]{}^,"
 WORD_OPS = {"mod"}
+ASSIGNMENT = re.compile(r"\s*([a-zA-Z])\s*=\s*(.+)\s*")
 
 FUNCTIONS = {
     "log": (functions.log, 1, 2),
@@ -47,6 +48,8 @@ POSTFIX = {
     "!": (functions.factorial)
 }
 
+VARIABLE = {}
+
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -74,7 +77,8 @@ class Parser:
 
     def starts_factor(self):
         token = self.current()
-        return token is not None and (token in closing_bracket or token in FUNCTIONS or token in CONSTANTS)
+        return token is not None and (token in closing_bracket
+                or token in FUNCTIONS or token in CONSTANTS or (token.isalpha() and len(token) == 1))
 
     def term(self):
         node = self.unary()
@@ -138,6 +142,10 @@ class Parser:
         if token in CONSTANTS:
             self.position += 1
             return ("const", token)
+
+        if token.isalpha() and len(token) == 1:
+            self.position += 1
+            return("var", token)
 
         if token in OPERATORS or token in POSTFIX or token in WORD_OPS:
             raise ValueError(f"Unexpected token: {token}")
@@ -225,7 +233,8 @@ def tokenizer(expression):
                 i += 1
 
             if name not in set(FUNCTIONS) | set(CONSTANTS) | WORD_OPS:
-                raise ValueError(f"Invalid Function: {name}")
+                if len(name) != 1:
+                    raise ValueError(f"Invalid identifier: {name}")
             token.append(name)
         else:
             raise ValueError(f"Invalid character: {char}")
@@ -268,6 +277,11 @@ def evaluate(node):
     if kind == "post":
         _, op, operand = node
         return POSTFIX[op](*[evaluate(operand)])
+
+    if kind == "var":
+        if node[1] not in VARIABLE:
+            raise ValueError(f"Undefined variable: {node[1]}")
+        return VARIABLE[node[1]]
 
     raise ValueError(f"Unknown node: {kind}")
 
@@ -314,7 +328,15 @@ def process(expression):
         values = parts[1:]
         return COMMANDS[command](state, *values)
 
-    result = calculate(expression)
+    match = ASSIGNMENT.fullmatch(expression)
+    if match:
+        name, expr = match.groups()
+        if name in CONSTANTS:
+            raise ValueError(f"Cannot assign to constant {name}")
+        result = calculate(expr)
+        VARIABLE[name] = result
+    else:
+        result = calculate(expression)
 
     return format(
         result,
