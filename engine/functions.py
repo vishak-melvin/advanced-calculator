@@ -31,6 +31,11 @@ def to_rad(val):
         val = val * math.pi/180
     return val
 
+def from_rad(val):
+    if state.angle == "deg":
+        val = val * 180/math.pi
+    return val
+# basic trig
 def sin(val):
     x = to_rad(val)
     return clean_trig(_m(x).sin,x)
@@ -40,6 +45,25 @@ def cos(val):
 def tan(val):
     x = to_rad(val)
     return clean_trig(_m(x).tan,x)
+
+# hyperbolic trig
+def sinh(x):
+    return _m(x).sinh(x)
+def cosh(x):
+    return _m(x).cosh(x)
+def tanh(x):
+    return _m(x).tanh(x)
+
+# inverse trig
+def asin(x):
+    result = _m(x).asin(x)
+    return from_rad(result)
+def acos(x):
+    result = _m(x).acos(x)
+    return from_rad(result) 
+def atan(x):
+    result = _m(x).atan(x)
+    return from_rad(result) 
 
 def log(val, base = None):
     if isinstance(val, complex) or val<0:

@@ -4,7 +4,14 @@ FUNCTION = {
     "tan": r"\tan",
     "gcd": r"\text{gcd}",
     "lcm": r"\text{lcm}",
+    "sinh": r"\sinh",
+    "cosh": r"\cosh",
+    "tanh": r"\tanh",
+    "asin": r"\arcsin",
+    "acos": r"\arccos",
+    "atan": r"\arctan",
 }
+
 
 def log(val, base=None):
     if base == None:

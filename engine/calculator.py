@@ -19,6 +19,12 @@ FUNCTIONS = {
     "lcm": (functions.lcm, 1, None),
     "npr": (functions.perm, 2, 2),
     "ncr": (functions.comb, 2, 2),
+    "sinh": (functions.sinh, 1, 1),
+    "cosh": (functions.cosh, 1, 1),
+    "tanh": (functions.tanh, 1, 1),
+    "asin": (functions.asin, 1, 1),
+    "acos": (functions.acos, 1, 1),
+    "atan": (functions.atan, 1, 1),
 }
 
 CONSTANTS = {

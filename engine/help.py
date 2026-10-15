@@ -27,6 +27,12 @@ _ENTRIES = [
     ("lcm", "functions", "least common multiple", "lcm(a, b, ...)", "Arguments must be integers."),
     ("floor", "functions", "round down to an integer", "floor(x)", ""),
     ("ceil", "functions", "round up to an integer", "ceil(x)", ""),
+    ("sinh", "functions", "hyperbolic sine", "sinh(x)", ""),
+    ("cosh", "functions", "hyperbolic cosine", "cosh(x)", ""),
+    ("tanh", "functions", "hyperbolic tangent", "tanh(x)", ""),
+    ("asin", "functions", "inverse/arc sine", "asin(x)", "Honors the current angle mode."),
+    ("acos", "functions", "inverse/arc cosine", "acos(x)", "Honors the current angle mode."),
+    ("atan", "functions", "inverse/arc tangent", "atan(x)", "Honors the current angle mode."),
 
     # constants
     ("pi",  "constants", "circle constant", "", ""),
