@@ -1,5 +1,28 @@
 from engine.state import state
 from engine.help import help_text
+from engine.variable import VARIABLE, save
+
+def vars(state, *args):
+    from engine.calculator import format
+    if not VARIABLE:
+        return "no variables stored"
+    return "\n".join(
+        f"{name} = {format(value, state.format, state.precision)}"
+        for name, value in sorted(VARIABLE.items())
+    )
+
+def clear_vars(state, *names):
+    if not names:
+        VARIABLE.clear()
+        save()
+        return "Cleared all variables"
+    for name in names:
+        if name not in VARIABLE:
+            raise ValueError(f"Undefined Variable: {name}")
+    for name in names:
+        del VARIABLE[name]
+    save()
+    return "Cleared "+", ".join(names)
 
 def mode(state,*val):
     if len(val)==0:
@@ -43,4 +66,6 @@ COMMANDS = {
     "mode":mode,
     "help":help,
     "precision": precision,
+    "var": vars,
+    "clear_var":clear_vars,
 }

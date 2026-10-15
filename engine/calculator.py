@@ -2,6 +2,8 @@ import math, re
 from engine.commands import COMMANDS
 from engine.state import state
 import engine.functions as functions
+from engine.variable import VARIABLE, load, save
+load()
 
 OPERATORS = "-+*/()[]{}^,"
 WORD_OPS = {"mod"}
@@ -47,8 +49,6 @@ closing_bracket = {
 POSTFIX = {
     "!": (functions.factorial)
 }
-
-VARIABLE = {}
 
 class Parser:
     def __init__(self, tokens):
@@ -335,6 +335,7 @@ def process(expression):
             raise ValueError(f"Cannot assign to constant {name}")
         result = calculate(expr)
         VARIABLE[name] = result
+        save()
     else:
         result = calculate(expression)
 
