@@ -1,13 +1,43 @@
 import math, re
+from functools import lru_cache
 from engine.commands import COMMANDS
 from engine.state import state
 import engine.functions as functions
-from engine.variable import VARIABLE, load, save
+from engine.store import VARIABLE, load, USER_FUNCTIONS, save_func, save_var
 load()
+@lru_cache(maxsize=512)
+def _parse_with(body, known):
+    return parse(body)
+def _parse_body(body):
+    return _parse_with(body, tuple(sorted(USER_FUNCTIONS)))
 
 OPERATORS = "-+*/()[]{}^,"
 WORD_OPS = {"mod"}
 ASSIGNMENT = re.compile(r"\s*([a-zA-Z])\s*=\s*(.+)\s*")
+FUNC_ASSIGN = re.compile(r"""
+    \s*
+    ([a-zA-Z]+)
+    \s* \( \s*
+    ([a-zA-Z](?:\s*,\s*[a-zA-Z])*)
+    \s* \) \s* = \s*
+    (.+?)
+    \s*
+    """, re.VERBOSE)
+
+def def_func(name, params, body):
+    if name in FUNCTIONS or name in CONSTANTS or name in WORD_OPS or name in COMMANDS:
+        raise ValueError(f"{name} is reserved")
+    if name in VARIABLE:
+        raise ValueError(f"{name} is already a variable")
+    if len(set(params)) != len(params):
+        raise ValueError("Duplicate parameter names")
+    if any(p in CONSTANTS for p in params):
+        raise ValueError("parameter cannot be a constant")
+    if re.search(rf"\b{name}\b", body):
+        raise ValueError("recursive defenition not supported")
+    parse(body)
+    USER_FUNCTIONS[name] = {"params": params, "body":body}
+    save_func()
 
 FUNCTIONS = {
     "log": (functions.log, 1, 2),
@@ -78,7 +108,7 @@ class Parser:
     def starts_factor(self):
         token = self.current()
         return token is not None and (token in closing_bracket
-                or token in FUNCTIONS or token in CONSTANTS or (token.isalpha() and len(token) == 1))
+                or token in FUNCTIONS or token in USER_FUNCTIONS or token in CONSTANTS or (token.isalpha() and len(token) == 1))
 
     def term(self):
         node = self.unary()
@@ -139,6 +169,9 @@ class Parser:
         if token in FUNCTIONS:
             return self.functions()
 
+        if token in USER_FUNCTIONS:
+            return self.user_function()
+
         if token in CONSTANTS:
             self.position += 1
             return ("const", token)
@@ -176,6 +209,26 @@ class Parser:
         if len(arguments) < min_args or (max_args is not None and len(arguments) > max_args):
             raise ValueError(f"{name} expects {min_args} to {max_args} arguments")
         return ("func", name, arguments)
+
+    def user_function(self):
+        name = self.current()
+        self.position += 1
+        return ("ufunc", name, self.arguments(name))
+
+    def arguments(self, name):
+        if self.current() != "(":
+            raise ValueError("expected (")
+        self.position += 1
+        args = []
+        if self.current() != ")":
+            args.append(self.expression())
+            while self.current() == ",":
+                self.position += 1
+                args.append(self.expression())
+        if self.current() != ")":
+            raise ValueError("expected )")
+        self.position += 1
+        return args
 
 def tokenizer(expression):
     token = []
@@ -232,7 +285,8 @@ def tokenizer(expression):
                 name += expression[i]
                 i += 1
 
-            if name not in set(FUNCTIONS) | set(CONSTANTS) | WORD_OPS:
+            valid = set(FUNCTIONS) | set(USER_FUNCTIONS) | WORD_OPS | set(CONSTANTS)
+            if name not in valid:
                 if len(name) != 1:
                     raise ValueError(f"Invalid identifier: {name}")
             token.append(name)
@@ -240,7 +294,7 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
-def evaluate(node):
+def evaluate(node, env=None):
     kind = node[0]
 
     if kind == "num":
@@ -250,17 +304,17 @@ def evaluate(node):
         return CONSTANTS[node[1]]
 
     if kind == "group":
-        return evaluate(node[2])
+        return evaluate(node[2], env)
 
     if kind == "neg":
-        return -evaluate(node[1])
+        return -evaluate(node[1], env)
 
     if kind == "pow":
-        return evaluate(node[1]) ** evaluate(node[2])
+        return evaluate(node[1],env) ** evaluate(node[2])
 
     if kind == "bin":
         _, op, left, right = node
-        left, right = evaluate(left), evaluate(right)
+        left, right = evaluate(left,env), evaluate(right,env)
         if op == "+": return left + right
         if op == "-": return left - right
         if op == "*": return left * right
@@ -269,19 +323,33 @@ def evaluate(node):
 
     if kind == "func":
         _, name, args = node
-        return FUNCTIONS[name][0](*[evaluate(a) for a in args])
+        return FUNCTIONS[name][0](*[evaluate(a,env) for a in args])
 
     if kind == "imul":
-        return evaluate(node[1]) * evaluate(node[2])
+        return evaluate(node[1],env) * evaluate(node[2],env)
 
     if kind == "post":
         _, op, operand = node
-        return POSTFIX[op](*[evaluate(operand)])
+        return POSTFIX[op](*[evaluate(operand)],env)
 
     if kind == "var":
-        if node[1] not in VARIABLE:
-            raise ValueError(f"Undefined variable: {node[1]}")
-        return VARIABLE[node[1]]
+        name = node[1]
+        if env and name in env:
+            return env[name]
+        if name in VARIABLE:
+            return VARIABLE[name]
+        raise ValueError(f"unidefined variable: {name}")
+
+    if kind == "ufunc":
+        _, name, args = node
+        if name not in USER_FUNCTIONS:
+            raise ValueError(f"undefined function: {name}")
+        params = USER_FUNCTIONS[name]["params"]
+        if len(args) != len(params):
+            raise ValueError(f"{name} expects {len(params)} arguements")
+        values = [evaluate(a, env) for a in args]
+        body = _parse_body(USER_FUNCTIONS[name]["body"])
+        return evaluate(body, dict(zip(params, values)))
 
     raise ValueError(f"Unknown node: {kind}")
 
@@ -323,19 +391,27 @@ def process(expression):
 
     parts = expression.split()
     command = parts[0]
-
     if command in COMMANDS:
         values = parts[1:]
         return COMMANDS[command](state, *values)
+
+    match = FUNC_ASSIGN.fullmatch(expression)
+    if match:
+        name, rparams, body = match.groups()
+        params = [p.strip() for p in rparams.split(",")]
+        def_func(name, params, body)
+        return f"{name}({', '.join(params)}) = {body}"
 
     match = ASSIGNMENT.fullmatch(expression)
     if match:
         name, expr = match.groups()
         if name in CONSTANTS:
             raise ValueError(f"Cannot assign to constant {name}")
+        if name in USER_FUNCTIONS:
+            raise ValueError(f"{name} is already a user function")
         result = calculate(expr)
         VARIABLE[name] = result
-        save()
+        save_var()
     else:
         result = calculate(expression)
 

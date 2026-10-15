@@ -1,6 +1,6 @@
 from engine.state import state
 from engine.help import help_text
-from engine.variable import VARIABLE, save
+from engine.store import VARIABLE, USER_FUNCTIONS, save_var, save_func
 
 def vars(state, *args):
     from engine.calculator import format
@@ -14,15 +14,36 @@ def vars(state, *args):
 def clear_vars(state, *names):
     if not names:
         VARIABLE.clear()
-        save()
+        save_var()
         return "Cleared all variables"
     for name in names:
         if name not in VARIABLE:
             raise ValueError(f"Undefined Variable: {name}")
     for name in names:
         del VARIABLE[name]
-    save()
+    save_var()
     return "Cleared "+", ".join(names)
+
+def func(state, *args):
+    if not USER_FUNCTIONS:
+        return "function isnt defined"
+    return "\n".join(
+        f"{name}({', '.join(d['params'])}) = {d["body"]}"
+        for name, d in sorted(USER_FUNCTIONS.items())
+    )
+
+def clear_funcs(state, *names):
+    if not names:
+        USER_FUNCTIONS.clear()
+        save_func()
+        return "cleared all functions"
+    for name in names:
+        if name not in USER_FUNCTIONS:
+            raise ValueError(f"undefined function {name}")
+    for name in names:
+        del USER_FUNCTIONS[name]
+    save_func()
+    return "deleted "+", ".join(names)
 
 def mode(state,*val):
     if len(val)==0:
