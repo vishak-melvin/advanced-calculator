@@ -13,7 +13,7 @@ _ENTRIES = [
     ("mod", "operators", "modulus", "", ""),
 
     # functions
-    ("log", "functions", "logarithm (natural by default)", "log(value[, base])",
+    ("log", "functions", "logarithm (natural by default)", "log(value, base)",
      "With one argument this is the natural log. The base is optional."),
     ("sin", "functions", "sine", "sin(x)", "Honors the current angle mode."),
     ("cos", "functions", "cosine", "cos(x)", "Honors the current angle mode."),
@@ -33,13 +33,16 @@ _ENTRIES = [
     ("asin", "functions", "inverse/arc sine", "asin(x)", "Honors the current angle mode."),
     ("acos", "functions", "inverse/arc cosine", "acos(x)", "Honors the current angle mode."),
     ("atan", "functions", "inverse/arc tangent", "atan(x)", "Honors the current angle mode."),
+    ("round", "functions", "rounds value to nearest integer", "round(a,b)",
+     "with one arguement, it rounds value to nearest integer. second arguement controls precision"),
 
     # constants
     ("pi",  "constants", "circle constant", "", ""),
     ("e",   "constants", "natural number", "", ""),
     ("tau", "constants", "2*pi", "", ""),
     ("phi", "constants", "golden ratio", "", ""),
-    ("i",   "constants", "imaginary unit", "", ""),
+    ("i", "constants", "imaginary unit", "", ""),
+    ("inf", "constants", "infinity", "", ""),
 
     # modes
     ("sci", "modes", "scientific notation", "", ""),
