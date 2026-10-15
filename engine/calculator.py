@@ -1,7 +1,7 @@
 import math
-from commands import COMMANDS
-from state import state
-import functions
+from engine.commands import COMMANDS
+from engine.state import state
+import engine.functions as functions
 
 OPERATORS = "-+*/()[]{}^,"
 WORD_OPS = {"mod"}

@@ -2,8 +2,8 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 import os
 
-from help import add_commands
-from calculator import process
+from engine.help import add_commands
+from engine.calculator import process
 
 TERMINAL_COMMANDS = {
     "clear": "-clears all previous text"

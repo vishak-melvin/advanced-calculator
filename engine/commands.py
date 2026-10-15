@@ -1,5 +1,5 @@
-from state import state
-from help import help_text
+from engine.state import state
+from engine.help import help_text
 
 def mode(state,*val):
     if len(val)==0:

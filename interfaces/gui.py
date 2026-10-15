@@ -1,8 +1,8 @@
 import sys
-from calculator import process, parse
+from engine.calculator import process, parse
 from Latex.latex_renderer import LatexRenderer
 from Latex.latex_converter import toLatex
-from help import add_commands, help_text
+from engine.help import add_commands, help_text
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
 QVBoxLayout, QWidget, QLabel, QScrollArea)
