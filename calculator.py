@@ -12,6 +12,13 @@ FUNCTIONS = {
     "tan": (functions.tan, 1, 1),
     "cos": (functions.cos, 1, 1),
     "root": (functions.root, 1, 2),
+    "abs": (abs, 1, 1),
+    "floor": (math.floor, 1 , 1),
+    "ceil": (math.ceil, 1, 1),
+    "gcd": (functions.gcd , 1, None),
+    "lcm": (functions.lcm, 1, None),
+    "npr": (functions.perm, 2, 2),
+    "ncr": (functions.comb, 2, 2),
 }
 
 CONSTANTS = {
@@ -150,7 +157,7 @@ class Parser:
             raise ValueError("Expected ')'")
         self.position += 1
 
-        if not (min_args <= len(arguments) <= max_args):
+        if len(arguments) < min_args or (max_args is not None and len(arguments) > max_args):
             raise ValueError(f"{name} expects {min_args} to {max_args} arguments")
         return ("func", name, arguments)
 

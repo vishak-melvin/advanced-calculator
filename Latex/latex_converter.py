@@ -2,8 +2,28 @@ FUNCTION = {
     "sin": r"\sin",
     "cos": r"\cos",
     "tan": r"\tan",
-    "log": r"\log",
-    "root": r"\root"
+    "gcd": r"\text{gcd}",
+    "lcm": r"\text{lcm}",
+}
+
+def log(val, base=None):
+    if base == None:
+        return rf"\ln\left({{{val}}}\right)"
+    return rf"\log_{{{base}}}\left({{{val}}}\right)"
+
+def root(val, deg=None):
+    if deg == None:
+        return rf"\sqrt{{{val}}}"
+    return rf"\sqrt[{deg}]{{{val}}}"
+
+CUSTOM_FUNCS = {
+    "log": log,
+    "root": root,
+    "npr": lambda n,r: rf"{{}}^{{{n}}}P_{{{r}}}",
+    "ncr": lambda n,r: rf"\binom{{{n}}}{{{r}}}",
+    "floor": lambda x: rf"\left\lfloor {x} \right\rfloor",
+    "ceil": lambda x: rf"\left\lceil {x} \right\rceil",
+    "abs": lambda x: rf"\left|{x}\right|",
 }
 
 CONSTANT = {
@@ -78,22 +98,13 @@ def toLatex(node):
 
     if kind == "func":
         _, name, arguments = node
-        if name == "log":
-            if len(arguments) == 1:
-                return rf"\ln\left({toLatex(arguments[0])}\right)"
-            value = toLatex(arguments[0])
-            base = toLatex(arguments[1])
-            return rf"\log_{{{base}}}\left({value}\right)"
-        if name == "root":
-            if len(arguments) == 1:
-                return rf"\sqrt{{{(toLatex(arguments[0]))}}}"
-            deg = toLatex(arguments[1])
-            val = toLatex(arguments[0])
-            return rf"\sqrt[{deg}]{{{val}}}"
+        args = [toLatex(a) for a in arguments]
+
+        if name in CUSTOM_FUNCS:
+            return CUSTOM_FUNCS[name](*args)
 
         function = FUNCTION.get(name, rf"\operatorname{{{name}}}")
-        args = ",".join(toLatex(arg) for arg in arguments)
-        return rf"{function}\left({args}\right)"
+        return rf"{function}\left({','.join(args)}\right)"
 
     if kind == "imul":
         return f"{toLatex(node[1])}{toLatex(node[2])}"

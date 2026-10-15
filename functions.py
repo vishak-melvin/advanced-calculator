@@ -3,6 +3,16 @@ from state import state
 def factorial(x):
     return math.gamma(x+1)
 
+def toInt(x):
+    if isinstance(x, complex):
+        if x.imag != 0:
+            raise ValueError("expected a real integer")
+        x = x.real
+    r = round(x)
+    if not math.isclose(x, r, rel_tol=0, abs_tol=1e-9):
+        raise ValueError("expected a integer")
+    return r
+
 def m(x):
     return cmath if isinstance(x, complex) else math 
 
@@ -65,3 +75,15 @@ def root(val,deg=None):
     if float(deg).is_integer() and n**int(deg) == val:
         return float(n)
     return r
+
+def gcd(*args):
+    return math.gcd(*(toInt(a) for a in args))
+
+def lcm(*args):
+    return math.lcm(*(toInt(a) for a in args))
+
+def perm(n, r):
+    return math.perm(toInt(n), toInt(r))
+
+def comb(n, r):
+    return math.comb(toInt(n), toInt(r))
