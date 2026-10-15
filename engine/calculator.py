@@ -330,7 +330,7 @@ def evaluate(node, env=None):
 
     if kind == "post":
         _, op, operand = node
-        return POSTFIX[op](*[evaluate(operand)],env)
+        return POSTFIX[op](*[evaluate(operand)])
 
     if kind == "var":
         name = node[1]

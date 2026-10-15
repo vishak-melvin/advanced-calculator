@@ -3,14 +3,17 @@ from engine.calculator import process
 from Latex.latex_renderer import LatexRenderer
 from Latex.latex_converter import toLatex
 from engine.help import add_commands, help_text
+from engine.store import USER_FUNCTIONS
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
 QVBoxLayout, QWidget, QLabel, QScrollArea)
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QFontDatabase
 app = QApplication(sys.argv)
 
 GUI_COMMANDS = {
-    "dark": "-toggle dark mode for Latex preview",
+    "dark": "toggle dark mode for Latex preview",
+    "func [function name]": "displays the function definition in latex"
 }
 
 add_commands(GUI_COMMANDS, "gui")
@@ -55,16 +58,21 @@ class History(QLineEdit):
             super().keyPressEvent(event)
 
 last_latex = None
+preview_override = None
 def update_preview(input_box, preview):
-    global last_latex
+    global last_latex, preview_override
     expression = input_box.text().strip()
-    latex = ""
-
     if expression:
+        preview_override = None
         try:
             latex = toLatex(expression)
         except Exception:
             return
+    elif preview_override is not None:
+        latex = preview_override
+    else:
+        latex = ""
+
     if latex != last_latex:
         last_latex = latex
         preview.set_latex(latex)
@@ -76,6 +84,7 @@ window.setWindowTitle("Calculator")
 central = QWidget()
 layout = QVBoxLayout(central)
 result_label = QLabel()
+result_label.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
 intro_label = QLabel("type 'help' if unsure")
 
 preview = LatexRenderer()
@@ -104,8 +113,10 @@ window.setCentralWidget(central)
 input_box.textChanged.connect(lambda:preview_timer.start())
 
 def evaluate():
+    global preview_override
     expression = input_box.text()
     input_box.addToHistory(expression)
+    preview_override = None
 
     if expression == "exit":
         window.close()
@@ -122,6 +133,29 @@ def evaluate():
         toggle_theme()
         result_label.setText(f"Latex dark mode: {'on' if latex_dark else 'off'}")
         input_box.clear()
+        return
+
+    command, _, arguments = expression.strip().partition(" ")
+    if command == "func" and arguments.strip():
+        names = arguments.split()
+        try:
+            if len(names) != 1:
+                raise ValueError("usage: func [function name]")
+            name = names[0]
+            if name not in USER_FUNCTIONS:
+                raise ValueError(f"undefined function {name}")
+            definition = USER_FUNCTIONS[name]
+            params = ",".join(definition["params"])
+            preview_override = toLatex(
+                f"{name}({params}) = {definition['body']}"
+            )
+            result_label.setText(f"{name} definition")
+            preview_timer.stop()
+            input_box.clear()
+            update_preview(input_box, preview)
+        except ValueError as error:
+            result_label.setText(f"Error: {error}")
+            input_box.clear()
         return
     
     intro_label.hide()
