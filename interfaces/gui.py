@@ -1,5 +1,5 @@
 import sys
-from engine.calculator import process, parse
+from engine.calculator import process
 from Latex.latex_renderer import LatexRenderer
 from Latex.latex_converter import toLatex
 from engine.help import add_commands, help_text
@@ -62,7 +62,7 @@ def update_preview(input_box, preview):
 
     if expression:
         try:
-            latex = toLatex(parse(expression))
+            latex = toLatex(expression)
         except Exception:
             return
     if latex != last_latex:

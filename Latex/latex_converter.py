@@ -1,3 +1,5 @@
+from engine.calculator import parse, FUNC_ASSIGN, ASSIGNMENT
+
 FUNCTION = {
     "sin": r"\sin",
     "cos": r"\cos",
@@ -55,7 +57,27 @@ POSTFIX = {
 def unwrap(node):
       return node[2] if node [0] == "group" else node
 
-def toLatex(node):
+def name_latex(name):
+    if len(name) == 1:
+        return name
+    else:
+        return rf"\operatorname{{{name}}}"
+
+def toLatex(expression):
+    match = FUNC_ASSIGN.fullmatch(expression)
+    if match:
+        name, rparams, body = match.groups()
+        params = ",".join(p.strip() for p in rparams.split(","))
+        return rf"{name_latex(name)}\left({params}\right) = {node_toLatex(parse(body))}"
+
+    match = ASSIGNMENT.fullmatch(expression)
+    if match:
+        name, expr = match.groups()
+        return rf"{name} = {node_toLatex(parse(expr))}"
+
+    return node_toLatex(parse(expression))
+
+def node_toLatex(node):
     kind = node[0]
     if kind == "num":
         text = node[1].lower()
@@ -70,25 +92,25 @@ def toLatex(node):
     if kind == "group":
         _, opening, inner = node
         left, right = BRACKET[opening]
-        return rf"\left{left}{toLatex(inner)}\right{right}"
+        return rf"\left{left}{node_toLatex(inner)}\right{right}"
 
     if kind == "neg":
-        return rf"-{toLatex(node[1])}"
+        return rf"-{node_toLatex(node[1])}"
 
     if kind == "pow":
         _, base, exponent = node
-        return rf"{toLatex(base)}^{{{toLatex(unwrap(exponent))}}}"
+        return rf"{node_toLatex(base)}^{{{node_toLatex(unwrap(exponent))}}}"
 
     if kind == "bin":
         _, op, left, right = node
 
         if op == "/":
-            numerator = toLatex(unwrap(left))
-            denominator = toLatex(unwrap(right))
+            numerator = node_toLatex(unwrap(left))
+            denominator = node_toLatex(unwrap(right))
             return rf"\frac{{{(numerator)}}}{{{denominator}}}"
 
-        left = toLatex(left)
-        right = toLatex(right)
+        left = node_toLatex(left)
+        right = node_toLatex(right)
 
         if op == "+":
             return f"{left} + {right}"
@@ -106,7 +128,7 @@ def toLatex(node):
 
     if kind == "func":
         _, name, arguments = node
-        args = [toLatex(a) for a in arguments]
+        args = [node_toLatex(a) for a in arguments]
 
         if name in CUSTOM_FUNCS:
             return CUSTOM_FUNCS[name](*args)
@@ -115,10 +137,18 @@ def toLatex(node):
         return rf"{function}\left({','.join(args)}\right)"
 
     if kind == "imul":
-        return f"{toLatex(node[1])}{toLatex(node[2])}"
+        return f"{node_toLatex(node[1])} {node_toLatex(node[2])}"
 
     if kind == "post":
         _, op, operand = node
-        return rf"{{{toLatex(operand)}{op}}}"
+        return rf"{{{node_toLatex(operand)}{op}}}"
+
+    if kind == "var":
+        return node[1]
+
+    if kind == "ufunc":
+        _, name, arguments = node
+        args = ",".join(node_toLatex(a) for a in arguments)
+        return rf"{name_latex(name)}\left({args}\right)"
 
     raise ValueError(f"Unknown AST node: {kind}")

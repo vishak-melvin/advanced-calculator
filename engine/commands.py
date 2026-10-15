@@ -89,4 +89,6 @@ COMMANDS = {
     "precision": precision,
     "var": vars,
     "clear_var":clear_vars,
+    "func": func,
+    "clear_func": clear_funcs,
 }

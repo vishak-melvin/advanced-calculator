@@ -54,7 +54,10 @@ _ENTRIES = [
     ("exit", "commands", "exit the calculator", "", ""),
     ("help", "commands", "show help", "help [topic]", ""),
     ("mode", "commands", "show current formatting mode", "", ""),
-    ("precision", "commands", "show or set decimal precision", "precision [digits]", ""),
+    ("var", "commands", "display all stored variables and their values", "", ""),
+    ("clear_var", "commands", "delete specified variables or all variable if not specified", "clear_var [variable name]", "if variable is not specified it WILL delete ALL variables"),
+    ("func", "commands", "display all stored functions", "", ""),
+    ("clear_func", "commands", "delete specified function or all functions if not specified", "clear_func [function name]", "if function is not specified it WILL delete ALL functions"),
 ]
 
 SECTIONS = {
