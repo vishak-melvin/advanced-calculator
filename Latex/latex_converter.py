@@ -39,6 +39,7 @@ CONSTANT = {
     "tau": r"\tau",
     "phi": r"\varphi",
     "i": "i",
+    "inf": r"\infty",
 }
 
 BRACKET = {

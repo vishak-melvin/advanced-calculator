@@ -25,6 +25,7 @@ FUNCTIONS = {
     "asin": (functions.asin, 1, 1),
     "acos": (functions.acos, 1, 1),
     "atan": (functions.atan, 1, 1),
+    "round": (functions.round_, 1, 2),
 }
 
 CONSTANTS = {
@@ -33,6 +34,7 @@ CONSTANTS = {
     "tau": math.tau,
     "phi": (1 + math.sqrt(5)) / 2,
     "i": complex(0,1),
+    "inf": math.inf
 }
 
 closing_bracket = {

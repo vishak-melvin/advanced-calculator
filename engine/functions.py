@@ -1,7 +1,12 @@
 import math, cmath
 from engine.state import state
 def factorial(x):
-    return math.gamma(x+1)
+    if x == int(x):          # integer-valued input, including 5.0
+        x = int(x)
+        if x < 0:
+            raise ValueError("factorial is undefined for negative integers")
+        return math.factorial(x)
+    return math.gamma(x + 1)
 
 def _TOInt(x):
     if isinstance(x, complex):
@@ -43,8 +48,15 @@ def cos(val):
     x = to_rad(val)
     return clean_trig(_m(x).cos,x)
 def tan(val):
-    x = to_rad(val)
-    return clean_trig(_m(x).tan,x)
+    if state.angle == "deg":
+        if val % 180 == 90:
+            return math.inf
+        x = to_rad(val)
+    else:
+        x = val
+        if abs(math.cos(x)) < 1e-15:
+            return math.inf
+    return clean_trig(_m(x).tan, x)
 
 # hyperbolic trig
 def sinh(x):
@@ -111,3 +123,6 @@ def perm(n, r):
 
 def comb(n, r):
     return math.comb(_TOInt(n), _TOInt(r))
+
+def round_(val, dig=None):
+    return round(val) if dig==None else round(val,_TOInt(dig))
