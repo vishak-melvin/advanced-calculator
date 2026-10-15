@@ -2,7 +2,7 @@ import sys
 from calculator import process, parse
 from Latex.latex_renderer import LatexRenderer
 from Latex.latex_converter import toLatex
-from commands import getHelp
+from help import add_commands, help_text
 
 from PySide6.QtWidgets import(QApplication, QMainWindow, QLineEdit,
 QVBoxLayout, QWidget, QLabel, QScrollArea)
@@ -13,6 +13,8 @@ GUI_COMMANDS = {
     "GUI SPECIFIC COMMANDS": "",
     "dark": "-toggle dark mode for Latex preview",
 }
+
+add_commands(GUI_COMMANDS)
 
 latex_dark = False
 def toggle_theme():
@@ -110,9 +112,11 @@ def evaluate():
         window.close()
         return
     if expression == "help":
-        result_label.setText(
-            getHelp(extra_commands=GUI_COMMANDS)
-        )
+        cmd, _, arg = expression.strip().partition(" ")
+        if cmd.lower() == "help":
+            result_label.setText(help_text(arg))
+            input_box.clear()
+            return
         input_box.clear()
         return
     if expression == "dark":

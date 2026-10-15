@@ -1,4 +1,5 @@
 from state import state
+from help import help_text
 
 def mode(state,*val):
     if len(val)==0:
@@ -35,57 +36,8 @@ def precision(state,*val):
         raise ValueError("precision cannot be more than 50")
     state.precision = val
 
-
-def getHelp(extra_commands=None):
-    text = HELP
-    if extra_commands:
-        extra_text = "\n".join(
-            f"{name}      {desc}"
-            for name, desc in extra_commands.items()
-        )
-        text += "\n" + extra_text
-    return text
-
-def help(state):
-    return getHelp()
-
-HELP = """
-OPERATORS:
-+    - Addition
--    - Subraction
-*    - Multiplication
-/    - Division
-^    - Exponentiation
-!    - Factorial
-mod  - modulus
-
-FUNCTIONS:
-log   - log(power,base) default is natural log
-sin   - sine trignometric function
-cos   - cosine trignometric function
-tan   - tangent trignometric function
-
-CONSTANTS:
-pi     - circle constant
-e      - natural number 
-tau    - 2*pi
-phi    - golden ratio
-i      - complex number
-
-MODES:
-sci - prefer scientific notation
-dec - prefer decimal notation
-rad - use radians
-deg - use degrees
-
-COMMANDS:
-exit        - Exit calculator
-help        - Display this help
-UP          - go up in history
-DOWN        - go down in history
-mode        - display current formatting mode
-precision   - display decimal precision or set a value after command
-        """
+def help(state, *val):
+    return help_text("".join(val))
 
 COMMANDS = {
     "mode":mode,
