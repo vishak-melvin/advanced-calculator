@@ -10,11 +10,10 @@ from PySide6.QtCore import Qt, QTimer
 app = QApplication(sys.argv)
 
 GUI_COMMANDS = {
-    "GUI SPECIFIC COMMANDS": "",
     "dark": "-toggle dark mode for Latex preview",
 }
 
-add_commands(GUI_COMMANDS)
+add_commands(GUI_COMMANDS, "gui")
 
 latex_dark = False
 def toggle_theme():

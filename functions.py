@@ -3,7 +3,7 @@ from state import state
 def factorial(x):
     return math.gamma(x+1)
 
-def toInt(x):
+def _TOInt(x):
     if isinstance(x, complex):
         if x.imag != 0:
             raise ValueError("expected a real integer")
@@ -13,7 +13,7 @@ def toInt(x):
         raise ValueError("expected a integer")
     return r
 
-def m(x):
+def _m(x):
     return cmath if isinstance(x, complex) else math 
 
 def snap(r,x):
@@ -33,13 +33,13 @@ def to_rad(val):
 
 def sin(val):
     x = to_rad(val)
-    return clean_trig(m(x).sin,x)
+    return clean_trig(_m(x).sin,x)
 def cos(val):
     x = to_rad(val)
-    return clean_trig(m(x).cos,x)
+    return clean_trig(_m(x).cos,x)
 def tan(val):
     x = to_rad(val)
-    return clean_trig(m(x).tan,x)
+    return clean_trig(_m(x).tan,x)
 
 def log(val, base = None):
     if isinstance(val, complex) or val<0:
@@ -77,13 +77,13 @@ def root(val,deg=None):
     return r
 
 def gcd(*args):
-    return math.gcd(*(toInt(a) for a in args))
+    return math.gcd(*(_TOInt(a) for a in args))
 
 def lcm(*args):
-    return math.lcm(*(toInt(a) for a in args))
+    return math.lcm(*(_TOInt(a) for a in args))
 
 def perm(n, r):
-    return math.perm(toInt(n), toInt(r))
+    return math.perm(_TOInt(n), _TOInt(r))
 
 def comb(n, r):
-    return math.comb(toInt(n), toInt(r))
+    return math.comb(_TOInt(n), _TOInt(r))
