@@ -2,7 +2,7 @@ from engine.state import state
 from engine.help import help_text
 from engine.store import VARIABLE, USER_FUNCTIONS, save_var, save_func
 
-def vars(state, *args):
+def vars(state):
     from engine.calculator import format
     if not VARIABLE:
         return "no variables stored"
@@ -11,7 +11,7 @@ def vars(state, *args):
         for name, value in sorted(VARIABLE.items())
     )
 
-def clear_vars(state, *names):
+def clear_vars(*names):
     if not names:
         VARIABLE.clear()
         save_var()
@@ -24,7 +24,7 @@ def clear_vars(state, *names):
     save_var()
     return "Cleared "+", ".join(names)
 
-def func(state, *args):
+def func(_state):
     if not USER_FUNCTIONS:
         return "function isnt defined"
     return "\n".join(
@@ -32,7 +32,7 @@ def func(state, *args):
         for name, d in sorted(USER_FUNCTIONS.items())
     )
 
-def clear_funcs(state, *names):
+def clear_funcs(*names):
     if not names:
         USER_FUNCTIONS.clear()
         save_func()
@@ -44,6 +44,13 @@ def clear_funcs(state, *names):
         del USER_FUNCTIONS[name]
     save_func()
     return "deleted "+", ".join(names)
+
+def clear(state, category, *names):
+    if category == "var":
+        return clear_vars(*names)
+    if category == "func":
+        return clear_funcs(*names)
+    raise ValueError("use clear var or clear func")
 
 def mode(state,*val):
     if len(val)==0:
@@ -88,7 +95,6 @@ COMMANDS = {
     "help":help,
     "precision": precision,
     "var": vars,
-    "clear_var":clear_vars,
     "func": func,
-    "clear_func": clear_funcs,
+    "clear": clear,
 }

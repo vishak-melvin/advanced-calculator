@@ -55,9 +55,8 @@ _ENTRIES = [
     ("help", "commands", "show help", "help [topic]", ""),
     ("mode", "commands", "show current formatting mode", "", ""),
     ("var", "commands", "display all stored variables and their values", "", ""),
-    ("clear_var", "commands", "delete specified variables or all variable if not specified", "clear_var [variable name]", "if variable is not specified it WILL delete ALL variables"),
+    ("clear", "commands", "delete specified variables/functions or all variables/functions if not specified", "clear [var/func] [variable/function name]", "if name is not specified it will delete ALL entries in specified store"),
     ("func", "commands", "display all stored functions", "", ""),
-    ("clear_func", "commands", "delete specified function or all functions if not specified", "clear_func [function name]", "if function is not specified it WILL delete ALL functions"),
 ]
 
 SECTIONS = {
