@@ -73,4 +73,36 @@ class Matrix:
             for row in self.rows
         ]
         return Matrix(result)
+
+    def ref(self):
+        m = self.rows
+        r = 0
+        for c in range(self.ncols):
+            if r>=self.nrows: break
+
+            pivot = None
+            for i in range(r, self.nrows):
+                if m[i][c] != 0:
+                    if i!=r:
+                        row_swap(m, r, i)
+                    pivot = m[r][c]
+                    break
+            if pivot is None:
+                continue
+
+            for i in range(r+1, self.nrows):
+                if m[i][c] == 0:
+                    continue
+                scale = -m[i][c]/m[r][c]
+                add_row_scaled(m, i, r, scale)
+            r += 1
                 
+
+def row_swap(m, i, j):
+    m[i], m[j] = m[j], m[i]
+
+def row_mult(m, i, k):
+    m[i] = [k*x for x in m[i]]
+
+def add_row_scaled(m, target, source, k):
+    m[target] = [t + s*k for t,s in zip(m[target], m[source])]
