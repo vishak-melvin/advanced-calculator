@@ -15,6 +15,11 @@ GUI_COMMANDS = {
     "dark": "toggle dark mode for Latex preview",
     "func [function name]": "displays the function definition in latex"
 }
+pairs = {
+    "[" : "[]",
+    "(" : "()",
+    "{" : "{}",
+}
 
 add_commands(GUI_COMMANDS, "gui")
 
@@ -41,7 +46,10 @@ class History(QLineEdit):
 
     def keyPressEvent(self, event):
         key = event.key()
-        if key == Qt.Key_Up:
+        if event.text() in pairs:
+            self.insert(pairs[event.text()])
+            self.setCursorPosition(self.cursorPosition() - 1)
+        elif key == Qt.Key_Up:
             if self.index == len(self.history):
                 self.draft = self.text()
             if self.index > 0:
