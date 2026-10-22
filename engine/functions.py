@@ -1,5 +1,6 @@
 import math, cmath
 from engine.state import state
+from engine.matrix import Matrix
 def factorial(x):
     if x == int(x):          # integer-valued input, including 5.0
         x = int(x)
@@ -126,3 +127,6 @@ def comb(n, r):
 
 def round_(val, dig=None):
     return round(val) if dig==None else round(val,_TOInt(dig))
+
+def determinant(m):
+    return m.det()

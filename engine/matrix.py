@@ -74,29 +74,45 @@ class Matrix:
         ]
         return Matrix(result)
 
-    def ref(self):
-        m = self.rows
-        r = 0
-        for c in range(self.ncols):
-            if r>=self.nrows: break
+    def det(self):
+        if self.nrows != self.ncols:
+            raise ValueError("cannot find determinant of non square matrix")
+        col = 0
+        result = 1
+        m_copy = Matrix(self.rows)
+        m = m_copy.rows
+        swap = ref(m_copy.rows)
+        for rows in range(m_copy.nrows):
+            result *= m[rows][col]
+            col += 1
+        return result * ((-1) ** swap)
 
-            pivot = None
-            for i in range(r, self.nrows):
-                if m[i][c] != 0:
-                    if i!=r:
-                        row_swap(m, r, i)
-                    pivot = m[r][c]
-                    break
-            if pivot is None:
+def ref(m):
+    nrows = len(m)
+    ncols = len(m[0])
+    r = 0
+    swap = 0
+    for c in range(ncols):
+        if r>=nrows: break
+
+        pivot = None
+        for i in range(r, nrows):
+            if m[i][c] != 0:
+                if i!=r:
+                    row_swap(m, r, i)
+                    swap += 1
+                pivot = m[r][c]
+                break
+        if pivot is None:
+            continue
+
+        for i in range(r+1, nrows):
+            if m[i][c] == 0:
                 continue
-
-            for i in range(r+1, self.nrows):
-                if m[i][c] == 0:
-                    continue
-                scale = -m[i][c]/m[r][c]
-                add_row_scaled(m, i, r, scale)
-            r += 1
-                
+            scale = -m[i][c]/m[r][c]
+            add_row_scaled(m, i, r, scale)
+        r += 1
+    return swap            
 
 def row_swap(m, i, j):
     m[i], m[j] = m[j], m[i]

@@ -60,6 +60,7 @@ FUNCTIONS = {
     "acos": (functions.acos, 1, 1),
     "atan": (functions.atan, 1, 1),
     "round": (functions.round_, 1, 2),
+    "det": (functions.determinant, 1, 1),
 }
 
 CONSTANTS = {
@@ -409,10 +410,13 @@ def calculate(expression):
 def format(result, mode, precision):
     def format_num(value):
         if mode == "dec":
-            return f"{value:.{precision}g}"
-
+            formatted = f"{value:.{precision}g}"
         elif mode == "sci":
-            return f"{value:.{precision}e}"
+            formatted = f"{value:.{precision}e}"
+
+        if formatted.startswith('-') and float(formatted) == 0:
+            return formatted[1:]
+        return formatted
 
     if isinstance(result, Matrix):
         return "[" + ", ".join(
