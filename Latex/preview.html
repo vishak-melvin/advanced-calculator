@@ -2,30 +2,55 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="katex.min.css">
     <script src="katex.min.js"></script>
 
     <style>
-        body {
+
+        html, body {
             margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
             padding: 12px;
+            box-sizing: border-box;
             background: #ffffff;
             color: #202124;
             font-family: sans-serif;
             transition: background 0.15s, color 0.15s;
+            display: flex;
+            align-items: center;
         }
 
         #math {
-            text-align: centre;
-            overflow-x: auto;
+            text-align: center;
+            width: 100%;
+        }
+
+        #math .katex-display {
+            margin: 0;
+            width: max-content;
+            position: relative;
+            left: 50%;
+        }
+
+        #math .katex {
+            transform-origin: center center;
         }
 
         body.dark {
             background: #1e1e2e;
             color: #cdd6f4;
         }
+        ::-webkit-scrollbar {
+            display: none;
+        }
     </style>
-
 </head>
 <body>
     <div id="math"></div>
@@ -39,7 +64,38 @@
                 throwOnError: false
                 }
             );
+
+            scheduleFitMath();
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(scheduleFitMath);
+            }
         }
+
+        function fitMath() {
+            const container = document.getElementById("math");
+            const display = container.querySelector(".katex-display");
+
+            if (!display) return;
+
+            display.style.transform = "none";
+
+            const availableWidth = container.clientWidth;
+            const requiredWidth = display.getBoundingClientRect().width;
+
+            if (availableWidth <= 0 || requiredWidth <= 0) return;
+
+            const scale = Math.min(1, availableWidth / requiredWidth);
+
+            display.style.transform = `translateX(-50%) scale(${scale})`;
+            display.style.transformOrigin = "center top";
+        }
+
+        function scheduleFitMath() {
+            requestAnimationFrame(fitMath);
+        }
+
+        window.addEventListener("resize", scheduleFitMath);
+        new ResizeObserver(scheduleFitMath).observe(document.getElementById("math"));
 
         window.setDarkMode = function(enabled) {
             document.body.classList.toggle("dark",enabled)
