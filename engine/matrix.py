@@ -95,21 +95,21 @@ def ref(m):
     for c in range(ncols):
         if r>=nrows: break
 
-        pivot = None
+        max = 0
         for i in range(r, nrows):
-            if m[i][c] != 0:
-                if i!=r:
-                    row_swap(m, r, i)
-                    swap += 1
-                pivot = m[r][c]
-                break
-        if pivot is None:
+            if abs(m[i][c]) > max:
+                max = abs(m[i][c])
+                max_i = i
+        if max == 0:
             continue
+        if max_i!=r:
+            row_swap(m, r, max_i)
+            swap += 1
 
         for i in range(r+1, nrows):
             if m[i][c] == 0:
                 continue
-            scale = -m[i][c]/m[r][c]
+            scale = Fraction(-m[i][c],m[r][c])
             add_row_scaled(m, i, r, scale)
         r += 1
     return swap            
