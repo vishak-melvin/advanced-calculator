@@ -1,4 +1,4 @@
-import math, cmath
+import math, cmath, sys
 from engine.state import state
 from engine.matrix import Matrix
 def factorial(x):
@@ -129,4 +129,15 @@ def round_(val, dig=None):
     return round(val) if dig==None else round(val,_TOInt(dig))
 
 def determinant(m):
-    return m.det()
+    result = m.det()
+    epsilon = sys.float_info.epsilon
+    n = m.nrows
+    scale = 0
+    for rows in m.rows:
+        for i in rows:
+            if scale < abs(i):
+                scale = i
+    tol = 10*n*(scale**n)*epsilon
+    if tol > abs(result):
+        return 0.0
+    return result

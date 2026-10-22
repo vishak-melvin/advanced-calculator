@@ -109,10 +109,10 @@ def ref(m):
         for i in range(r+1, nrows):
             if m[i][c] == 0:
                 continue
-            scale = Fraction(-m[i][c],m[r][c])
+            scale = -m[i][c]/m[r][c]
             add_row_scaled(m, i, r, scale)
         r += 1
-    return swap            
+    return swap          
 
 def row_swap(m, i, j):
     m[i], m[j] = m[j], m[i]
