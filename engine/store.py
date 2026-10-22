@@ -1,5 +1,6 @@
 import json, os
 from pathlib import Path
+from engine.matrix import Matrix
 
 MAIN = Path.home() / ".pycalc"
 VARIABLE_PATH = MAIN / "variables.json"
@@ -23,10 +24,24 @@ def _write(path, data):
         pass
 
 def _encode(v):
-    return {"re":v.real, "im":v.imag} if isinstance(v, complex) else v
+    if isinstance(v, complex):
+        return {"re": v.real, "im": v.imag}
+    if isinstance(v, Matrix):
+        return {"__type__": "matrix", "rows": _encode(v.rows)}
+    if isinstance(v, list):
+        return [_encode(item) for item in v]
+    return v
 
 def _decode(v):
-    return complex(v["re"], v["im"]) if isinstance(v, dict) else v
+    if isinstance(v, dict):
+        if v.get("__type__") == "matrix":
+            return Matrix(_decode(v["rows"]))
+        if set(v) == {"re", "im"}:
+            return complex(v["re"], v["im"])
+        return {key: _decode(value) for key, value in v.items()}
+    if isinstance(v, list):
+        return [_decode(item) for item in v]
+    return v
 
 def load():
     try:
