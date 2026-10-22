@@ -2,6 +2,7 @@ import math, re
 from functools import lru_cache
 from engine.commands import COMMANDS
 from engine.state import state
+from engine.matrix import Matrix
 import engine.functions as functions
 from engine.store import VARIABLE, load, USER_FUNCTIONS, save_func, save_var
 load()
@@ -157,6 +158,9 @@ class Parser:
         if token is None:
             raise ValueError("Expected a number or '('")
 
+        if token == "[":
+            return self.matrix()
+
         if token in closing_bracket:
             closing = closing_bracket[token]
             self.position += 1
@@ -185,6 +189,42 @@ class Parser:
 
         self.position += 1
         return ("num", token)
+
+    def matrix(self):
+        if self.current() != "[":
+            raise ValueError("expected [")
+        self.position += 1
+        rows = []
+        while True:
+            if self.current() != "[":
+                raise ValueError("expected [ at beginning of row")
+            self.position += 1
+            row = []
+            if self.current() == "]":
+                raise ValueError("row cannot be empty")
+            row.append(self.expression())
+            while self.current() == ",":
+                self.position += 1
+                if self.current() in ("]", None):
+                    raise ValueError("Expected matrix element")
+                row.append(self.expression())
+            if self.current() != "]":
+                raise ValueError("expected row to close with ]")
+            self.position += 1
+            rows.append(row)
+
+            if self.current() == ",":
+                self.position += 1
+                continue
+
+            if self.current() != "]":
+                raise ValueError("expected matrix to close with ]")
+            self.position += 1
+            break
+        width = len(rows[0])
+        if any(len(row) != width for row in rows):
+            raise ValueError("all rows must be the same size as each other")
+        return ("matrix", rows)
 
     def functions(self):
         name = self.current()
@@ -306,11 +346,18 @@ def evaluate(node, env=None):
     if kind == "group":
         return evaluate(node[2], env)
 
+    if kind == "matrix":
+        rows = node[1]
+        return Matrix([
+            [evaluate(element, env) for element in row]
+            for row in rows
+        ])
+
     if kind == "neg":
         return -evaluate(node[1], env)
 
     if kind == "pow":
-        return evaluate(node[1],env) ** evaluate(node[2])
+        return evaluate(node[1],env) ** evaluate(node[2],env)
 
     if kind == "bin":
         _, op, left, right = node
@@ -330,7 +377,7 @@ def evaluate(node, env=None):
 
     if kind == "post":
         _, op, operand = node
-        return POSTFIX[op](*[evaluate(operand)])
+        return POSTFIX[op](*[evaluate(operand, env)])
 
     if kind == "var":
         name = node[1]
@@ -366,6 +413,12 @@ def format(result, mode, precision):
 
         elif mode == "sci":
             return f"{value:.{precision}e}"
+
+    if isinstance(result, Matrix):
+        return "[" + ", ".join(
+            "[" + ", ".join(format(value, mode, precision) for value in row) + "]"
+            for row in result.rows
+        ) + "]"
 
     if isinstance(result, complex):
         real = result.real

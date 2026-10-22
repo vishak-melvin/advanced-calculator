@@ -94,6 +94,19 @@ def node_toLatex(node):
         left, right = BRACKET[opening]
         return rf"\left{left}{node_toLatex(inner)}\right{right}"
 
+    if kind == "matrix":
+        rows = node[1]
+        latex_rows = [
+            " & ".join(node_toLatex(element) for element in row)
+            for row in rows
+        ]
+
+        return(
+            r"\begin{bmatrix}"
+            + r" \\ ".join(latex_rows)
+            + r"\end{bmatrix}"
+        )
+
     if kind == "neg":
         return rf"-{node_toLatex(node[1])}"
 
