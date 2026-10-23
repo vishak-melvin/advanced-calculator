@@ -1,4 +1,5 @@
-from engine.calculator import parse, CONSTANTS
+from engine.calculator import parse
+from engine.state import CONSTANTS
 
 def parse_eq(equation):
     if not equation.strip():
