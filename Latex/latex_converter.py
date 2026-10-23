@@ -1,6 +1,6 @@
 import re
-
-from engine.calculator import parse, FUNC_ASSIGN, ASSIGNMENT
+from engine.state import FUNC_ASSIGN, ASSIGNMENT
+from engine.calculator import parse
 
 FUNCTION = {
     "sin": r"\sin",

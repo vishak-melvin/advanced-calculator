@@ -1,9 +1,8 @@
-import math, re
+import re
 from functools import lru_cache
 from engine.commands import COMMANDS
-from engine.state import state
+import engine.state as state
 from engine.matrix import Matrix
-import engine.functions as functions
 from engine.store import VARIABLE, load, USER_FUNCTIONS, save_func, save_var
 load()
 @lru_cache(maxsize=512)
@@ -12,75 +11,20 @@ def _parse_with(body, known):
 def _parse_body(body):
     return _parse_with(body, tuple(sorted(USER_FUNCTIONS)))
 
-OPERATORS = "-+*/()[]{}^,="
-WORD_OPS = {"mod"}
-ASSIGNMENT = re.compile(r"\s*([a-zA-Z])\s*=\s*(.+)\s*")
-FUNC_ASSIGN = re.compile(r"""
-    \s*
-    ([a-zA-Z]+)
-    \s* \( \s*
-    ([a-zA-Z](?:\s*,\s*[a-zA-Z])*)
-    \s* \) \s* = \s*
-    (.+?)
-    \s*
-    """, re.VERBOSE)
-
 def def_func(name, params, body):
-    if name in FUNCTIONS or name in CONSTANTS or name in WORD_OPS or name in COMMANDS:
+    if name in state.FUNCTIONS or name in state.CONSTANTS or name in state.WORD_OPS or name in COMMANDS:
         raise ValueError(f"{name} is reserved")
     if name in VARIABLE:
         raise ValueError(f"{name} is already a variable")
     if len(set(params)) != len(params):
         raise ValueError("Duplicate parameter names")
-    if any(p in CONSTANTS for p in params):
+    if any(p in state.CONSTANTS for p in params):
         raise ValueError("parameter cannot be a constant")
     if re.search(rf"\b{name}\b", body):
         raise ValueError("recursive defenition not supported")
     parse(body)
     USER_FUNCTIONS[name] = {"params": params, "body":body}
     save_func()
-
-FUNCTIONS = {
-    "log": (functions.log, 1, 2),
-    "sin": (functions.sin, 1, 1),
-    "tan": (functions.tan, 1, 1),
-    "cos": (functions.cos, 1, 1),
-    "root": (functions.root, 1, 2),
-    "abs": (abs, 1, 1),
-    "floor": (math.floor, 1 , 1),
-    "ceil": (math.ceil, 1, 1),
-    "gcd": (functions.gcd , 1, None),
-    "lcm": (functions.lcm, 1, None),
-    "npr": (functions.perm, 2, 2),
-    "ncr": (functions.comb, 2, 2),
-    "sinh": (functions.sinh, 1, 1),
-    "cosh": (functions.cosh, 1, 1),
-    "tanh": (functions.tanh, 1, 1),
-    "asin": (functions.asin, 1, 1),
-    "acos": (functions.acos, 1, 1),
-    "atan": (functions.atan, 1, 1),
-    "round": (functions.round_, 1, 2),
-    "det": (functions.determinant, 1, 1),
-}
-
-CONSTANTS = {
-    "pi": math.pi,
-    "e": math.e,
-    "tau": math.tau,
-    "phi": (1 + math.sqrt(5)) / 2,
-    "i": complex(0,1),
-    "inf": math.inf
-}
-
-closing_bracket = {
-    "(": ")",
-    "[": "]",
-    "{": "}",
-}
-
-POSTFIX = {
-    "!": (functions.factorial)
-}
 
 class Parser:
     def __init__(self, tokens):
@@ -113,8 +57,8 @@ class Parser:
 
     def starts_factor(self):
         token = self.current()
-        return token is not None and (token in closing_bracket
-                or token in FUNCTIONS or token in USER_FUNCTIONS or token in CONSTANTS or (token.isalpha() and len(token) == 1))
+        return token is not None and (token in state.closing_bracket
+                or token in state.FUNCTIONS or token in USER_FUNCTIONS or token in state.CONSTANTS or (token.isalpha() and len(token) == 1))
 
     def term(self):
         node = self.unary()
@@ -166,8 +110,8 @@ class Parser:
         if token == "[":
             return self.matrix()
 
-        if token in closing_bracket:
-            closing = closing_bracket[token]
+        if token in state.closing_bracket:
+            closing = state.closing_bracket[token]
             self.position += 1
             inner = self.expression()
             if self.current() != closing:
@@ -175,13 +119,13 @@ class Parser:
             self.position += 1
             return ("group", token, inner)
 
-        if token in FUNCTIONS:
+        if token in state.FUNCTIONS:
             return self.functions()
 
         if token in USER_FUNCTIONS:
             return self.user_function()
 
-        if token in CONSTANTS:
+        if token in state.CONSTANTS:
             self.position += 1
             return ("const", token)
 
@@ -189,7 +133,7 @@ class Parser:
             self.position += 1
             return("var", token)
 
-        if token in OPERATORS or token in POSTFIX or token in WORD_OPS:
+        if token in state.OPERATORS or token in state.POSTFIX or token in state.WORD_OPS:
             raise ValueError(f"Unexpected token: {token}")
 
         self.position += 1
@@ -234,7 +178,7 @@ class Parser:
     def functions(self):
         name = self.current()
         self.position += 1
-        _, min_args, max_args = FUNCTIONS[name]
+        _, min_args, max_args = state.FUNCTIONS[name]
 
         if self.current() != "(":
             raise ValueError(f"Expected '(' after {name}")
@@ -317,7 +261,7 @@ def tokenizer(expression):
                 
             token.append(digits)
 
-        elif char in OPERATORS or char in POSTFIX:
+        elif char in state.OPERATORS or char in state.POSTFIX:
             token.append(char)
             i += 1
         
@@ -334,18 +278,18 @@ def tokenizer(expression):
             raise ValueError(f"Invalid character: {char}")
     return token
 
-valid = set(FUNCTIONS) | set(USER_FUNCTIONS) | WORD_OPS | set(CONSTANTS)
+valid = set(state.FUNCTIONS) | set(USER_FUNCTIONS) | state.WORD_OPS | set(state.CONSTANTS)
 def split_name(name):
     pieces = []
     j = 0
     while j < len(name):
-        for end in range(len(name), j, -1):      # longest match first
+        for end in range(len(name), j, -1):
             if name[j:end] in valid:
                 pieces.append(name[j:end])
                 j = end
                 break
-        else:                                    # no known name starts here
-            pieces.append(name[j])               # single-letter variable
+        else:
+            pieces.append(name[j])
             j += 1
     return pieces
 
@@ -356,7 +300,7 @@ def evaluate(node, env=None):
         return float(node[1])
 
     if kind == "const":
-        return CONSTANTS[node[1]]
+        return state.CONSTANTS[node[1]]
 
     if kind == "group":
         return evaluate(node[2], env)
@@ -385,14 +329,14 @@ def evaluate(node, env=None):
 
     if kind == "func":
         _, name, args = node
-        return FUNCTIONS[name][0](*[evaluate(a,env) for a in args])
+        return state.FUNCTIONS[name][0](*[evaluate(a,env) for a in args])
 
     if kind == "imul":
         return evaluate(node[1],env) * evaluate(node[2],env)
 
     if kind == "post":
         _, op, operand = node
-        return POSTFIX[op](*[evaluate(operand, env)])
+        return state.POSTFIX[op](*[evaluate(operand, env)])
 
     if kind == "var":
         name = node[1]
@@ -467,23 +411,23 @@ def process(expression):
     command = parts[0]
     if command in COMMANDS:
         values = parts[1:]
-        return COMMANDS[command](state, *values)
+        return COMMANDS[command](state.state, *values)
 
     solve_match = re.fullmatch(r"\s*solve\s*\((.*)\)\s*", expression, re.DOTALL)
     if solve_match:
         return COMMANDS["solve"](state, solve_match.group(1))
 
-    match = FUNC_ASSIGN.fullmatch(expression)
+    match = state.FUNC_ASSIGN.fullmatch(expression)
     if match:
         name, rparams, body = match.groups()
         params = [p.strip() for p in rparams.split(",")]
         def_func(name, params, body)
         return f"{name}({', '.join(params)}) = {body}"
 
-    match = ASSIGNMENT.fullmatch(expression)
+    match = state.ASSIGNMENT.fullmatch(expression)
     if match:
         name, expr = match.groups()
-        if name in CONSTANTS:
+        if name in state.CONSTANTS:
             raise ValueError(f"Cannot assign to constant {name}")
         if name in USER_FUNCTIONS:
             raise ValueError(f"{name} is already a user function")
@@ -495,6 +439,6 @@ def process(expression):
 
     return format(
         result,
-        state.format,
-        state.precision
+        state.state.format,
+        state.state.precision
     )

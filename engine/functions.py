@@ -1,6 +1,4 @@
 import math, cmath, sys
-from engine.state import state
-from engine.matrix import Matrix
 def factorial(x):
     if x == int(x):          # integer-valued input, including 5.0
         x = int(x)
@@ -33,11 +31,13 @@ def clean_trig(func, x):
     return snap(result, x)
 
 def to_rad(val):
+    from engine.state import state
     if state.angle == "deg":
         val = val * math.pi/180
     return val
 
 def from_rad(val):
+    from engine.state import state
     if state.angle == "deg":
         val = val * 180/math.pi
     return val
@@ -49,6 +49,7 @@ def cos(val):
     x = to_rad(val)
     return clean_trig(_m(x).cos,x)
 def tan(val):
+    from engine.state import state
     if state.angle == "deg":
         if val % 180 == 90:
             return math.inf
