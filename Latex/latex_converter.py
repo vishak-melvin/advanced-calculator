@@ -1,3 +1,5 @@
+import re
+
 from engine.calculator import parse, FUNC_ASSIGN, ASSIGNMENT
 
 FUNCTION = {
@@ -64,6 +66,10 @@ def name_latex(name):
         return rf"\operatorname{{{name}}}"
 
 def toLatex(expression):
+    solve_match = re.fullmatch(r"\s*solve\s*\((.*)\)\s*", expression, re.DOTALL)
+    if solve_match:
+        return node_toLatex(parse(solve_match.group(1)))
+
     match = FUNC_ASSIGN.fullmatch(expression)
     if match:
         name, rparams, body = match.groups()
@@ -79,6 +85,8 @@ def toLatex(expression):
 
 def node_toLatex(node):
     kind = node[0]
+    if kind == "eq":
+        return f"{node_toLatex(node[1])} = {node_toLatex(node[2])}"
     if kind == "num":
         text = node[1].lower()
         if "e" in text:

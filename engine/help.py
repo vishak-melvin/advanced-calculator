@@ -57,6 +57,7 @@ _ENTRIES = [
     ("var", "commands", "display all stored variables and their values", "", ""),
     ("clear", "commands", "delete specified variables/functions or all variables/functions if not specified", "clear [var/func] [variable/function name]", "if name is not specified it will delete ALL entries in specified store"),
     ("func", "commands", "display all stored functions", "", ""),
+    ("solve", "commands", "solve an equation", "solve(equation)", "Equation solving is not available yet."),
 ]
 
 SECTIONS = {

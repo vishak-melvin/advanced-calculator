@@ -12,7 +12,7 @@ def _parse_with(body, known):
 def _parse_body(body):
     return _parse_with(body, tuple(sorted(USER_FUNCTIONS)))
 
-OPERATORS = "-+*/()[]{}^,"
+OPERATORS = "-+*/()[]{}^,="
 WORD_OPS = {"mod"}
 ASSIGNMENT = re.compile(r"\s*([a-zA-Z])\s*=\s*(.+)\s*")
 FUNC_ASSIGN = re.compile(r"""
@@ -94,6 +94,10 @@ class Parser:
 
     def parse(self):
         node = self.expression()
+        if self.current() == "=":
+            self.position += 1
+            right = self.expression()
+            node = ("eq", node, right)
         if self.current() is not None:
             raise ValueError(f"Unexpected token: {self.current()}")
         return node
@@ -399,6 +403,9 @@ def evaluate(node, env=None):
         body = _parse_body(USER_FUNCTIONS[name]["body"])
         return evaluate(body, dict(zip(params, values)))
 
+    if kind == "eq":
+        raise ValueError("equations must be used with solve()")
+
     raise ValueError(f"Unknown node: {kind}")
 
 def parse(expression):
@@ -451,6 +458,10 @@ def process(expression):
     if command in COMMANDS:
         values = parts[1:]
         return COMMANDS[command](state, *values)
+
+    solve_match = re.fullmatch(r"\s*solve\s*\((.*)\)\s*", expression, re.DOTALL)
+    if solve_match:
+        return COMMANDS["solve"](state, solve_match.group(1))
 
     match = FUNC_ASSIGN.fullmatch(expression)
     if match:
