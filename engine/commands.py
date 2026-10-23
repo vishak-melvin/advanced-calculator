@@ -91,7 +91,7 @@ def help(state, *val):
     return help_text("".join(val))
 
 def solve(_state, equation_str):
-    from engine.solver import parse_eq
+    from solver.analyze import parse_eq
     return parse_eq(equation_str)
 
 COMMANDS = {
