@@ -326,18 +326,28 @@ def tokenizer(expression):
 
         elif char.isalpha():
             name = ""
-            while i<len(expression) and (expression[i].isalpha()):
+            while i < len(expression) and expression[i].isalpha():
                 name += expression[i]
                 i += 1
-
-            valid = set(FUNCTIONS) | set(USER_FUNCTIONS) | WORD_OPS | set(CONSTANTS)
-            if name not in valid:
-                if len(name) != 1:
-                    raise ValueError(f"Invalid identifier: {name}")
-            token.append(name)
+            token.extend(split_name(name))
         else:
             raise ValueError(f"Invalid character: {char}")
     return token
+
+valid = set(FUNCTIONS) | set(USER_FUNCTIONS) | WORD_OPS | set(CONSTANTS)
+def split_name(name):
+    pieces = []
+    j = 0
+    while j < len(name):
+        for end in range(len(name), j, -1):      # longest match first
+            if name[j:end] in valid:
+                pieces.append(name[j:end])
+                j = end
+                break
+        else:                                    # no known name starts here
+            pieces.append(name[j])               # single-letter variable
+            j += 1
+    return pieces
 
 def evaluate(node, env=None):
     kind = node[0]
