@@ -1,5 +1,5 @@
-from engine.calculator import parse
-from engine.state import CONSTANTS
+from engine.calculator import parse, format as format_result
+from engine.state import CONSTANTS, state
 
 def parse_eq(equation):
     if not equation.strip():
@@ -20,6 +20,58 @@ def parse_eq(equation):
         rhs = analyze(ast[2])
         # equivelent to doing lhs-rhs = 0 where we ignore the =0 part
         polynomials.append(p_add(lhs,rhs,-1))
+    polynomial = polynomials[0]
+    solution = solver_chooser(polynomial)
+    if isinstance(solution, str):
+        if solution == "no_solution":
+            return "No solution"
+        elif solution == "infinite_solutions":
+            return "Infinitely many solutions"
+
+    variable = next(
+        var
+        for monomial in polynomial
+        for var, _degree in monomial
+    )
+    formatted = ", ".join(
+        format_result(value, state.format, state.precision)
+        for value in solution
+    )
+    return f"{variable} = {formatted}"
+
+def solver_chooser(poly):
+    n_var, max_deg, total_deg = eq_info(poly)
+    if n_var == 0:
+        if all(coeff == 0 for coeff in poly.values()):
+            return "infinite_solutions"
+        return "no_solution"
+    elif n_var == 1 and total_deg == 1:
+        from solver.linear import simple_linear
+        return simple_linear(poly)
+    elif n_var == 1 and total_deg == 2:
+        from solver.polynomial import quadratic
+        return quadratic(poly)
+    else:
+        raise ValueError("unsupported equation type")
+        
+
+def eq_info(poly):
+    variables = set()
+    max_deg = {}
+    total_deg = 0
+
+    for monomial in poly:
+        monomial_deg = 0
+
+        for var, deg in monomial:
+            variables.add(var)
+            if var not in max_deg:
+                max_deg[var] = deg
+            max_deg[var] = max(max_deg[var], deg)
+            monomial_deg += deg
+        total_deg = max(total_deg, monomial_deg)
+
+    return len(variables), max_deg, total_deg
         
 def split_top_commas(equations):
     depth = 0
@@ -98,6 +150,8 @@ def analyze(ast):
         if not set(exp) <= {()}:
             raise ValueError("exponent must be a constant")
         n = exp.get((), 0)
+        if set(base) <= {()}:
+            return {(): base.get((),0)**n}
         if n < 0 or n != int(n):
             raise ValueError("exponent must be a non-negative integer")
         return p_pow(base, int(n))
