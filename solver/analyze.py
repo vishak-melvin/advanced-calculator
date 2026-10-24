@@ -51,6 +51,9 @@ def solver_chooser(poly):
     elif n_var == 1 and total_deg == 2:
         from solver.polynomial import quadratic
         return quadratic(poly)
+    elif n_var ==  1 and total_deg > 2:
+        from solver.polynomial import n_degree
+        return n_degree(poly, total_deg)
     else:
         raise ValueError("unsupported equation type")
         
