@@ -54,7 +54,6 @@ def solver_chooser(poly):
     else:
         raise ValueError("unsupported equation type")
         
-
 def eq_info(poly):
     variables = set()
     max_deg = {}
@@ -70,7 +69,6 @@ def eq_info(poly):
             max_deg[var] = max(max_deg[var], deg)
             monomial_deg += deg
         total_deg = max(total_deg, monomial_deg)
-
     return len(variables), max_deg, total_deg
         
 def split_top_commas(equations):
@@ -94,13 +92,22 @@ def split_top_commas(equations):
 
 def p_const(c): return {(): c} if c != 0 else {}
 
+def degree_order(poly):
+    return dict(sorted(
+        poly.items(),
+        key=lambda item: (
+            -sum(degree for _variable, degree in item[0]),
+            item[0],
+        ),
+    ))
+
 def p_add(a, b, sign=1):
     out = dict(a)
     for m, c in b.items():
         out[m] = out.get(m, 0) + sign * c
         if out[m] == 0:
             del out[m]
-    return out
+    return degree_order(out)
 
 def m_mul(m1, m2):
     powers = dict(m1)
@@ -114,7 +121,7 @@ def p_mul(a, b):
         for m2, c2 in b.items():
             m = m_mul(m1, m2)
             out[m] = out.get(m, 0) + c1 * c2
-    return {m: c for m, c in out.items() if c != 0}
+    return degree_order({m: c for m, c in out.items() if c != 0})
 
 def p_pow(a, n):
     result = {(): 1}
