@@ -1,6 +1,6 @@
 import math, cmath, sys
 def factorial(x):
-    if x == int(x):          # integer-valued input, including 5.0
+    if x == int(x):
         x = int(x)
         if x < 0:
             raise ValueError("factorial is undefined for negative integers")

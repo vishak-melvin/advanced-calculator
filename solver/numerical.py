@@ -40,10 +40,8 @@ def durand_kerner(coeff, c_tol=10, max_itr=1000):
         worst = max(abs(p)/b for p,b in (horner(zi,monic) for zi in z))
         if worst >1e-8:
             raise ValueError("could not find accurate roots")
-
     return z
     
-
 # evaluates a poly eq given a value for x. also returns bound as scale of error
 def horner(x, coeff):
     p = coeff[0]

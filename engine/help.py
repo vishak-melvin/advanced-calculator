@@ -53,7 +53,7 @@ _ENTRIES = [
     # commands
     ("exit", "commands", "exit the calculator", "", ""),
     ("help", "commands", "show help", "help [topic]", ""),
-    ("mode", "commands", "show current formatting mode", "", ""),
+    ("mode", "commands", "show current formatting mode", "mode [mode]", "for types of modes use 'help modes'"),
     ("var", "commands", "display all stored variables and their values", "", ""),
     ("clear", "commands", "delete specified variables/functions or all variables/functions if not specified", "clear [var/func] [variable/function name]", "if name is not specified it will delete ALL entries in specified store"),
     ("func", "commands", "display all stored functions", "", ""),
